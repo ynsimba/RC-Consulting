@@ -10,6 +10,7 @@
     "dev:web": "npm run dev -w @rc/web",
     "dev:api": "npm run dev -w @rc/api",
     "build": "npm run build -w @rc/shared && npm run build -w @rc/api && npm run build -w @rc/web",
+    "build:web": "npm run build -w @rc/web",
     "db:generate": "npm run db:generate -w @rc/api",
     "db:migrate": "npm run db:migrate -w @rc/api",
     "db:seed": "npm run db:seed -w @rc/api",
