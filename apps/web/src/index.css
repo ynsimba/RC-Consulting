@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold: #c4a35a;
+  --color-gold-light: #d8bc7a;
+  --color-gold-dark: #9a7a3a;
+  --color-brown: #6b4f3a;
+  --color-brown-deep: #3d2b1f;
+  --color-ink: #2a1f18;
+  --color-muted: #7a6554;
+  --color-soft: #f4efe6;
+  --color-line: #e2d6c6;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-roboto: "Roboto", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[#faf7f1] text-ink font-sans antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-gold;
+  }
+
+  a {
+    @apply transition-colors duration-200;
+  }
+
+  ::selection {
+    @apply bg-gold/35 text-ink;
+  }
+}
+
+@layer utilities {
+  .container-rc {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .btn-gold {
+    background: linear-gradient(180deg, #d8bc7a 0%, #c4a35a 45%, #8f6d32 100%);
+    @apply inline-flex items-center justify-center rounded-md px-7 py-3.5 text-xs font-semibold tracking-[0.18em] text-white uppercase shadow-sm transition duration-300;
+    box-shadow: 0 8px 20px rgba(61, 43, 31, 0.18);
+  }
+
+  .btn-gold:hover {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center rounded-md border border-gold px-7 py-3.5 text-xs font-semibold tracking-[0.18em] text-brown uppercase transition duration-300 hover:border-gold-dark hover:bg-gold hover:text-white;
+  }
+
+  .section-pad {
+    @apply py-16 md:py-24;
+  }
+
+  .hero-overlay {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(42, 31, 24, 0.72) 0%,
+        rgba(61, 43, 31, 0.55) 45%,
+        rgba(42, 31, 24, 0.78) 100%
+      );
+  }
+}

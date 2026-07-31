@@ -1,0 +1,168 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum AppointmentType {
+  CABINET
+  PHONE
+  VIDEO
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(CLIENT)
+  firstName    String?
+  lastName     String?
+  phone        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  client       Client?
+  articles     Article[]
+  notifications Notification[]
+}
+
+model Client {
+  id           String        @id @default(cuid())
+  userId       String?       @unique
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  firstName    String
+  lastName     String
+  email        String
+  phone        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+
+  @@index([email])
+}
+
+model Appointment {
+  id          String            @id @default(cuid())
+  clientId    String
+  client      Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  type        AppointmentType
+  duration    Int
+  startsAt    DateTime
+  endsAt      DateTime
+  subject     String
+  description String
+  status      AppointmentStatus @default(PENDING)
+  manageToken String            @unique @default(cuid())
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([startsAt])
+  @@index([status])
+}
+
+model Availability {
+  id        String   @id @default(cuid())
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([dayOfWeek, startTime, endTime])
+}
+
+model BlockedSlot {
+  id        String   @id @default(cuid())
+  date      DateTime @db.Date
+  startTime String?
+  endTime   String?
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([date])
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  articles  Article[]
+}
+
+model Article {
+  id             String    @id @default(cuid())
+  title          String
+  slug           String    @unique
+  excerpt        String
+  content        String
+  coverImage     String?
+  published      Boolean   @default(false)
+  publishedAt    DateTime?
+  seoTitle       String?
+  seoDescription String?
+  categoryId     String?
+  category       Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  authorId       String?
+  author         User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([published, publishedAt])
+}
+
+model Faq {
+  id         String   @id @default(cuid())
+  question   String
+  answer     String
+  questionEn String?
+  answerEn   String?
+  category   String?
+  order      Int      @default(0)
+  published  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read, createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}

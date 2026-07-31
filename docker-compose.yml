@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rc-consulting-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rc
+      POSTGRES_PASSWORD: rc_secret
+      POSTGRES_DB: rc_consulting
+    ports:
+      - "5432:5432"
+    volumes:
+      - rc_pg_data:/var/lib/postgresql/data
+
+volumes:
+  rc_pg_data:
