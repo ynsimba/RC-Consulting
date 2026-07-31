@@ -15,3 +15,4 @@ uploads
 *.zip
 apps/web/rc-front-hostinger.zip
 apps/web/rc-front-hostinger/
+hostinger-dist

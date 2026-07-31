@@ -11,6 +11,7 @@
     "dev:api": "npm run dev -w @rc/api",
     "build": "npm run build -w @rc/shared && npm run build -w @rc/api && npm run build -w @rc/web",
     "build:web": "npm run build -w @rc/web",
+    "build:hostinger": "npm run build -w @rc/shared && npm run build -w @rc/web && node scripts/prepare-hostinger.mjs",
     "db:generate": "npm run db:generate -w @rc/api",
     "db:migrate": "npm run db:migrate -w @rc/api",
     "db:seed": "npm run db:seed -w @rc/api",
