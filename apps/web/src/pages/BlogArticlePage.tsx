@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { Seo } from "@/lib/seo";
 import { PageHero } from "@/components/ui/PageHero";
 import { Button } from "@/components/ui/Button";
@@ -10,10 +10,10 @@ type Article = {
   slug: string;
   excerpt: string;
   content: string;
-  coverImage?: string | null;
-  seoTitle?: string | null;
-  seoDescription?: string | null;
-  publishedAt?: string | null;
+  cover_image?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  published_at?: string | null;
   category?: { name: string } | null;
 };
 
@@ -21,7 +21,19 @@ export default function BlogArticlePage() {
   const { slug } = useParams();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["article", slug],
-    queryFn: () => api<Article>(`/api/blog/articles/${slug}`),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("articles")
+        .select(
+          "title, slug, excerpt, content, cover_image, seo_title, seo_description, published_at, category:categories(name)",
+        )
+        .eq("slug", slug!)
+        .eq("published", true)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("not found");
+      return data as unknown as Article;
+    },
     enabled: !!slug,
   });
 
@@ -43,27 +55,27 @@ export default function BlogArticlePage() {
   return (
     <>
       <Seo
-        title={data.seoTitle || data.title}
-        description={data.seoDescription || data.excerpt}
+        title={data.seo_title || data.title}
+        description={data.seo_description || data.excerpt}
         path={`/blog/${data.slug}`}
-        image={data.coverImage ?? undefined}
+        image={data.cover_image ?? undefined}
         type="article"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "BlogPosting",
           headline: data.title,
           description: data.excerpt,
-          image: data.coverImage,
-          datePublished: data.publishedAt,
+          image: data.cover_image,
+          datePublished: data.published_at,
           author: { "@type": "Organization", name: "RC Consulting" },
         }}
       />
       <PageHero title={data.title} subtitle={data.category?.name} />
       <article className="section-pad">
         <div className="container-rc max-w-3xl">
-          {data.coverImage && (
+          {data.cover_image && (
             <img
-              src={data.coverImage}
+              src={data.cover_image}
               alt=""
               className="mb-10 w-full object-cover"
               loading="eager"
@@ -75,7 +87,10 @@ export default function BlogArticlePage() {
           />
           <div className="mt-12 flex flex-wrap gap-4">
             <Button to="/rendez-vous">Prendre rendez-vous</Button>
-            <Link to="/blog" className="self-center text-sm text-gold uppercase tracking-wide">
+            <Link
+              to="/blog"
+              className="self-center text-sm tracking-wide text-gold uppercase"
+            >
               ← Retour au blog
             </Link>
           </div>

@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
           name="email"
           type="email"
           required
-          defaultValue="admin@rcconsulting.fr"
+          defaultValue=""
           className="w-full border border-line px-4 py-3"
           placeholder="Email"
         />

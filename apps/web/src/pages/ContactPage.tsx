@@ -2,7 +2,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { contactMessageSchema, type ContactMessageInput } from "@rc/shared";
-import { api } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { Seo } from "@/lib/seo";
 import { PageHero } from "@/components/ui/PageHero";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -23,12 +23,18 @@ const WHATSAPP_URL = "https://wa.me/32476950655";
 
 async function sendContactMessage(data: ContactMessageInput) {
   try {
-    return await api("/api/messages", {
-      method: "POST",
-      body: JSON.stringify(data),
+    const { error } = await supabase.from("messages").insert({
+      first_name: data.firstName,
+      last_name: data.lastName,
+      email: data.email,
+      phone: data.phone ?? null,
+      subject: data.subject,
+      message: data.message,
     });
+    if (error) throw error;
+    return { ok: true };
   } catch {
-    // Secours si l'API n'est pas déployée (front seul sur Hostinger)
+    // Secours si Supabase n'est pas encore branché
     const res = await fetch(
       `https://formsubmit.co/ajax/${CONTACT_EMAIL}`,
       {

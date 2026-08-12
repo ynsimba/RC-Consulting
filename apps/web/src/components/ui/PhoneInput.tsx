@@ -17,6 +17,7 @@ type Props = {
   error?: string;
   className?: string;
   inputClassName?: string;
+  compact?: boolean;
   onChange?: (value: string) => void;
   onBlur?: () => void;
 };
@@ -29,10 +30,16 @@ export function PhoneInput({
   value = "",
   error,
   className = "",
-  inputClassName = "w-full border-0 bg-transparent px-3 py-2.5 focus:outline-none",
+  inputClassName,
+  compact = false,
   onChange,
   onBlur,
 }: Props) {
+  const resolvedInputClass =
+    inputClassName ??
+    (compact
+      ? "w-full border-0 bg-transparent px-2.5 py-1.5 text-sm focus:outline-none"
+      : "w-full border-0 bg-transparent px-3 py-2.5 focus:outline-none");
   const { lang, t } = useLanguage();
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -118,7 +125,13 @@ export function PhoneInput({
 
   return (
     <label className={`block text-sm ${className}`}>
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide">
+      <span
+        className={
+          compact
+            ? "mb-0.5 block text-[10px] font-semibold tracking-wide text-muted uppercase"
+            : "mb-1 block text-xs font-semibold uppercase tracking-wide"
+        }
+      >
         {label}
       </span>
       <div
@@ -131,7 +144,9 @@ export function PhoneInput({
           aria-expanded={open}
           aria-controls={listId}
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex shrink-0 items-center gap-1.5 border-r border-line px-2.5 py-2.5 text-sm hover:bg-soft"
+          className={`inline-flex shrink-0 items-center gap-1.5 border-r border-line text-sm hover:bg-soft ${
+            compact ? "px-2 py-1.5" : "px-2.5 py-2.5"
+          }`}
         >
           <span aria-hidden className="text-base leading-none">
             {flagEmoji(country.iso2)}
@@ -155,7 +170,7 @@ export function PhoneInput({
             emit(iso2, next);
           }}
           onBlur={onBlur}
-          className={inputClassName}
+          className={resolvedInputClass}
         />
 
         {open && (
@@ -207,7 +222,13 @@ export function PhoneInput({
           </div>
         )}
       </div>
-      {error && <span className="mt-1 block text-xs text-red-600">{error}</span>}
+      {error && (
+        <span
+          className={`block text-red-600 ${compact ? "mt-0.5 text-[11px]" : "mt-1 text-xs"}`}
+        >
+          {error}
+        </span>
+      )}
     </label>
   );
 }

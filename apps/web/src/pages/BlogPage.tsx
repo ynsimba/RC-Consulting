@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { Seo } from "@/lib/seo";
 import { PageHero } from "@/components/ui/PageHero";
 import { FadeIn } from "@/components/ui/FadeIn";
@@ -10,15 +10,9 @@ type Article = {
   title: string;
   slug: string;
   excerpt: string;
-  coverImage?: string | null;
-  publishedAt?: string | null;
+  cover_image?: string | null;
+  published_at?: string | null;
   category?: { name: string; slug: string } | null;
-};
-
-type BlogResponse = {
-  items: Article[];
-  page: number;
-  totalPages: number;
 };
 
 type Category = { id: string; name: string; slug: string };
@@ -28,23 +22,43 @@ export default function BlogPage() {
   const q = params.get("q") ?? "";
   const category = params.get("category") ?? "";
   const page = Number(params.get("page") ?? "1");
+  const pageSize = 9;
 
   const { data, isLoading } = useQuery({
     queryKey: ["blog", q, category, page],
-    queryFn: () => {
-      const sp = new URLSearchParams({
-        page: String(page),
-        pageSize: "9",
-      });
-      if (q) sp.set("q", q);
-      if (category) sp.set("category", category);
-      return api<BlogResponse>(`/api/blog/articles?${sp}`);
+    queryFn: async () => {
+      let query = supabase
+        .from("articles")
+        .select("id, title, slug, excerpt, cover_image, published_at, category:categories(name, slug)", {
+          count: "exact",
+        })
+        .eq("published", true)
+        .order("published_at", { ascending: false });
+
+      if (q) query = query.or(`title.ilike.%${q}%,excerpt.ilike.%${q}%`);
+      if (category) query = query.eq("category.slug", category);
+
+      const from = (page - 1) * pageSize;
+      const { data, error, count } = await query.range(from, from + pageSize - 1);
+      if (error) throw error;
+      return {
+        items: (data ?? []) as unknown as Article[],
+        page,
+        totalPages: Math.max(1, Math.ceil((count ?? 0) / pageSize)),
+      };
     },
   });
 
   const { data: categories = [] } = useQuery({
     queryKey: ["blog-categories"],
-    queryFn: () => api<Category[]>("/api/blog/categories"),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, name, slug")
+        .order("name");
+      if (error) throw error;
+      return (data ?? []) as Category[];
+    },
   });
 
   return (
@@ -112,7 +126,7 @@ export default function BlogPage() {
                   <Link to={`/blog/${article.slug}`}>
                     <img
                       src={
-                        article.coverImage ??
+                        article.cover_image ??
                         "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80"
                       }
                       alt=""
