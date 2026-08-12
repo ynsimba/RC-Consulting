@@ -16,8 +16,17 @@ export const env = {
   adminPassword: required("ADMIN_PASSWORD", "Admin123!"),
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   emailFrom: process.env.EMAIL_FROM ?? "RC Consulting <noreply@rcconsulting.fr>",
-  adminNotifyEmail:
-    process.env.ADMIN_NOTIFY_EMAIL ?? "yvesnsimba01@gmail.com",
+  adminNotifyEmails: (
+    process.env.ADMIN_NOTIFY_EMAIL ??
+    "contact@rc-consulting-legal.com,charlotte.richard@rc-consulting-legal.com"
+  )
+    .split(",")
+    .map((e) => e.trim())
+    .filter(Boolean),
+  /** @deprecated use adminNotifyEmails */
+  get adminNotifyEmail() {
+    return this.adminNotifyEmails[0] ?? "contact@rc-consulting-legal.com";
+  },
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "",
     apiKey: process.env.CLOUDINARY_API_KEY ?? "",

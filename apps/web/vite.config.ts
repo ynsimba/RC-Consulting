@@ -12,5 +12,18 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    strictPort: true,
+    watch: {
+      // Empêche HMR cassé par les builds Hostinger dans apps/web/
+      ignored: [
+        "**/rc-front-hostinger*/**",
+        "**/hostinger-dist/**",
+        "**/dist/**",
+        "**/.git/**",
+      ],
+    },
+  },
+  optimizeDeps: {
+    include: ["recharts"],
   },
 });

@@ -18,10 +18,10 @@ export function PracticeAreas() {
         />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {PRACTICE_AREAS.map((area, i) => (
-            <FadeIn key={area.slug} delay={i * 0.05}>
+            <FadeIn key={area.slug} delay={i * 0.05} className="h-full">
               <Link
                 to={`/nos-expertises/${area.slug}`}
-                className="group block border border-line bg-white p-7 transition hover:border-gold"
+                className="group flex h-full flex-col border border-line bg-white p-7 transition hover:border-gold"
               >
                 <p className="mb-4 font-serif text-2xl text-gold">
                   {String(i + 1).padStart(2, "0")}
@@ -29,7 +29,7 @@ export function PracticeAreas() {
                 <h3 className="mb-3 text-sm font-bold tracking-[0.14em] uppercase transition group-hover:text-gold">
                   {t.areas[area.slug].title}
                 </h3>
-                <p className="text-sm leading-relaxed text-muted">
+                <p className="flex-1 text-sm leading-relaxed text-muted">
                   {t.areas[area.slug].short}
                 </p>
               </Link>

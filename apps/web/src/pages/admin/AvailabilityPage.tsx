@@ -8,11 +8,23 @@ import {
   fetchAvailabilityWindows,
   fetchBlockedSlots,
   updateAllowedDurations,
+  updateAvailabilityWindow,
 } from "@/lib/admin";
 import { fetchSettings } from "@/lib/bookings";
+import type { AvailabilityWindow } from "@/types/database";
 import { Button } from "@/components/ui/Button";
 
 const days = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+
+const emptyWindowForm = {
+  day_of_week: 1,
+  start_time: "08:30",
+  end_time: "18:00",
+};
+
+function toTimeInput(value: string) {
+  return String(value).slice(0, 5);
+}
 
 export default function AvailabilityPage() {
   const qc = useQueryClient();
@@ -29,11 +41,8 @@ export default function AvailabilityPage() {
     queryFn: fetchSettings,
   });
 
-  const [windowForm, setWindowForm] = useState({
-    day_of_week: 1,
-    start_time: "08:30",
-    end_time: "18:00",
-  });
+  const [windowForm, setWindowForm] = useState(emptyWindowForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [blockForm, setBlockForm] = useState({
     date: "",
     start_time: "",
@@ -43,14 +52,42 @@ export default function AvailabilityPage() {
   });
   const [durationsText, setDurationsText] = useState("");
 
-  const createWindow = useMutation({
-    mutationFn: () => createAvailabilityWindow(windowForm),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-windows"] }),
+  function resetWindowForm() {
+    setEditingId(null);
+    setWindowForm(emptyWindowForm);
+  }
+
+  function startEdit(w: AvailabilityWindow) {
+    setEditingId(w.id);
+    setWindowForm({
+      day_of_week: w.day_of_week,
+      start_time: toTimeInput(w.start_time),
+      end_time: toTimeInput(w.end_time),
+    });
+  }
+
+  const saveWindow = useMutation({
+    mutationFn: async () => {
+      if (windowForm.start_time >= windowForm.end_time) {
+        throw new Error("L'heure de fin doit être après l'heure de début");
+      }
+      if (editingId) {
+        return updateAvailabilityWindow(editingId, windowForm);
+      }
+      return createAvailabilityWindow(windowForm);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["admin-windows"] });
+      resetWindowForm();
+    },
   });
 
   const deleteWindow = useMutation({
     mutationFn: (id: string) => deleteAvailabilityWindow(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-windows"] }),
+    onSuccess: (_data, id) => {
+      void qc.invalidateQueries({ queryKey: ["admin-windows"] });
+      if (editingId === id) resetWindowForm();
+    },
   });
 
   const createBlocked = useMutation({
@@ -144,7 +181,7 @@ export default function AvailabilityPage() {
           className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:flex sm:flex-wrap sm:gap-3"
           onSubmit={(e) => {
             e.preventDefault();
-            createWindow.mutate();
+            saveWindow.mutate();
           }}
         >
           <select
@@ -170,6 +207,7 @@ export default function AvailabilityPage() {
             onChange={(e) =>
               setWindowForm((f) => ({ ...f, start_time: e.target.value }))
             }
+            required
           />
           <input
             type="time"
@@ -178,31 +216,68 @@ export default function AvailabilityPage() {
             onChange={(e) =>
               setWindowForm((f) => ({ ...f, end_time: e.target.value }))
             }
+            required
           />
-          <Button type="submit" className="col-span-2 sm:col-span-1">
-            Ajouter
-          </Button>
+          <div className="col-span-2 flex flex-wrap gap-2 sm:col-span-1">
+            <Button type="submit" disabled={saveWindow.isPending}>
+              {editingId
+                ? saveWindow.isPending
+                  ? "Enregistrement…"
+                  : "Enregistrer"
+                : "Ajouter"}
+            </Button>
+            {editingId && (
+              <Button type="button" variant="outline" onClick={resetWindowForm}>
+                Annuler
+              </Button>
+            )}
+          </div>
         </form>
+        {saveWindow.isError && (
+          <p className="mt-2 text-xs text-red-700" role="alert">
+            {saveWindow.error instanceof Error
+              ? saveWindow.error.message
+              : "Impossible d'enregistrer ce créneau"}
+          </p>
+        )}
         <ul className="mt-3 space-y-1.5 sm:mt-4 sm:space-y-2">
-          {(windowsQuery.data ?? []).map((w) => (
-            <li
-              key={w.id}
-              className="flex items-center justify-between gap-2 border border-line px-2.5 py-2 text-xs sm:px-3 sm:text-sm"
-            >
-              <span className="min-w-0 truncate">
-                {days[w.day_of_week]} {String(w.start_time).slice(0, 5)} –{" "}
-                {String(w.end_time).slice(0, 5)}
-                {!w.is_active ? " (inactif)" : ""}
-              </span>
-              <button
-                type="button"
-                className="shrink-0 text-[10px] font-semibold tracking-wide text-red-600 uppercase sm:text-xs"
-                onClick={() => deleteWindow.mutate(w.id)}
+          {(windowsQuery.data ?? []).map((w) => {
+            const selected = editingId === w.id;
+            return (
+              <li
+                key={w.id}
+                className={`flex items-center justify-between gap-2 border px-2.5 py-2 text-xs sm:px-3 sm:text-sm ${
+                  selected ? "border-gold bg-gold/5" : "border-line"
+                }`}
               >
-                Suppr.
-              </button>
-            </li>
-          ))}
+                <span className="min-w-0 truncate">
+                  {days[w.day_of_week]} {toTimeInput(w.start_time)} –{" "}
+                  {toTimeInput(w.end_time)}
+                  {!w.is_active ? " (inactif)" : ""}
+                </span>
+                <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+                  <button
+                    type="button"
+                    className="text-[10px] font-semibold tracking-wide text-gold uppercase sm:text-xs"
+                    onClick={() => startEdit(w)}
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    type="button"
+                    className="text-[10px] font-semibold tracking-wide text-red-600 uppercase sm:text-xs"
+                    onClick={() => {
+                      if (confirm("Supprimer ce créneau ?")) {
+                        deleteWindow.mutate(w.id);
+                      }
+                    }}
+                  >
+                    Suppr.
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </section>
 

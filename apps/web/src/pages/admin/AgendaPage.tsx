@@ -10,11 +10,13 @@ import {
   confirmAppointmentWithEmail,
   refuseAppointmentWithEmail,
 } from "@/lib/emails/adminActions";
+import {
+  brusselsDayBoundsIso,
+  brusselsWallToIso,
+  brusselsYmdFromIso,
+  toLocalYmd,
+} from "@/lib/datetime";
 import type { Appointment, AppointmentStatus } from "@/types/database";
-
-function ymd(d: Date) {
-  return d.toISOString().slice(0, 10);
-}
 
 function monthCells(year: number, month: number) {
   const first = new Date(year, month, 1);
@@ -39,34 +41,42 @@ export default function AgendaPage() {
   const today = useMemo(() => new Date(), []);
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
-  const [selectedDay, setSelectedDay] = useState(ymd(today));
+  const [selectedDay, setSelectedDay] = useState(toLocalYmd(today));
 
   const todayQuery = useQuery({
     queryKey: ["admin-today"],
     queryFn: fetchTodayAppointments,
   });
 
-  const monthStart = new Date(viewYear, viewMonth, 1);
-  const monthEnd = new Date(viewYear, viewMonth + 1, 0, 23, 59, 59);
+  const monthStartYmd = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-01`;
+  const lastDay = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const monthEndYmd = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+  const monthBounds = useMemo(
+    () => ({
+      from: brusselsWallToIso(monthStartYmd, "00:00:00"),
+      to: brusselsDayBoundsIso(monthEndYmd).to,
+    }),
+    [monthStartYmd, monthEndYmd],
+  );
   const monthQuery = useQuery({
     queryKey: ["admin-month", viewYear, viewMonth],
     queryFn: () =>
       fetchAppointments({
-        from: monthStart.toISOString(),
-        to: monthEnd.toISOString(),
+        from: monthBounds.from,
+        to: monthBounds.to,
       }),
   });
 
   const dayList = useMemo(() => {
     return (monthQuery.data ?? []).filter(
-      (a) => a.starts_at.slice(0, 10) === selectedDay,
+      (a) => brusselsYmdFromIso(a.starts_at) === selectedDay,
     );
   }, [monthQuery.data, selectedDay]);
 
   const countsByDay = useMemo(() => {
     const map = new Map<string, number>();
     for (const a of monthQuery.data ?? []) {
-      const key = a.starts_at.slice(0, 10);
+      const key = brusselsYmdFromIso(a.starts_at);
       map.set(key, (map.get(key) ?? 0) + 1);
     }
     return map;
@@ -202,7 +212,7 @@ export default function AgendaPage() {
             ))}
             {monthCells(viewYear, viewMonth).map((d, i) => {
               if (!d) return <div key={`e-${i}`} className="h-9" />;
-              const key = ymd(d);
+              const key = toLocalYmd(d);
               const count = countsByDay.get(key) ?? 0;
               const selected = key === selectedDay;
               return (

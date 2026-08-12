@@ -1,2 +1,23 @@
-# Site 100% statique (React). Aucun PHP.
+# Site 100% statique (React SPA). Aucun PHP.
 DirectoryIndex index.html
+
+<IfModule mod_headers.c>
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Content-Type-Options "nosniff"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Ne pas réécrire les fichiers / dossiers existants
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Toutes les routes React → index.html (ex: /admin/login)
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Fallback si mod_rewrite indisponible (certains hébergements)
+FallbackResource /index.html

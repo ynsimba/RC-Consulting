@@ -38,16 +38,7 @@ export async function createPublicAppointment(input: {
   const appointment = data as Appointment;
 
   // Non bloquant : la demande reste enregistrée même si l'email admin échoue.
-  void notifyAdminNewAppointment({
-    firstName: input.firstName,
-    lastName: input.lastName,
-    email: input.email,
-    phone: input.phone,
-    subject: input.subject,
-    description: input.description,
-    duration: input.duration,
-    startsAt: appointment.starts_at ?? input.startsAt,
-  }).then((result) => {
+  void notifyAdminNewAppointment(appointment.id).then((result) => {
     if (!result.ok) {
       console.error("[booking] notification admin non envoyée:", result.error);
     }

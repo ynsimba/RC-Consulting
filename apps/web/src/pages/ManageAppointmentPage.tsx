@@ -1,17 +1,42 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchAvailableSlots,
   getAppointmentByToken,
   manageAppointmentByToken,
 } from "@/lib/bookings";
+import { brusselsWallToIso } from "@/lib/datetime";
+import { readManageTokenFromLocation } from "@/lib/manageToken";
 import { Seo } from "@/lib/seo";
 import { PageHero } from "@/components/ui/PageHero";
 import { Button } from "@/components/ui/Button";
 
-export default function ManageAppointmentPage() {
+function useManageToken() {
+  const { token: pathToken } = useParams();
+  const [hashToken, setHashToken] = useState(() =>
+    readManageTokenFromLocation(),
+  );
+
+  useEffect(() => {
+    const sync = () => setHashToken(readManageTokenFromLocation());
+    sync();
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+
+  return pathToken || hashToken;
+}
+
+/** Anciennes URLs /gerer/:token → fragment (hors logs serveur). */
+export function ManageTokenRedirect() {
   const { token } = useParams();
+  if (!token) return <Navigate to="/rendez-vous" replace />;
+  return <Navigate to={`/rendez-vous/gerer#${token}`} replace />;
+}
+
+export default function ManageAppointmentPage() {
+  const token = useManageToken();
   const qc = useQueryClient();
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -38,11 +63,26 @@ export default function ManageAppointmentPage() {
       manageAppointmentByToken(
         token!,
         "reschedule",
-        new Date(`${date}T${time}:00`).toISOString(),
+        brusselsWallToIso(date, time),
         data?.duration,
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["manage", token] }),
   });
+
+  if (!token) {
+    return (
+      <>
+        <Seo
+          title="Gérer mon rendez-vous"
+          description="Annuler ou modifier votre rendez-vous RC Consulting."
+          path="/rendez-vous/gerer"
+          noIndex
+          referrer="no-referrer"
+        />
+        <div className="container-rc py-24">Lien de gestion invalide.</div>
+      </>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -62,7 +102,9 @@ export default function ManageAppointmentPage() {
       <Seo
         title="Gérer mon rendez-vous"
         description="Annuler ou modifier votre rendez-vous RC Consulting."
-        path={`/rendez-vous/gerer/${token}`}
+        path="/rendez-vous/gerer"
+        noIndex
+        referrer="no-referrer"
       />
       <PageHero compact title="Gérer mon rendez-vous" />
       <section className="section-pad">
@@ -74,6 +116,7 @@ export default function ManageAppointmentPage() {
               {new Date(data.starts_at).toLocaleString("fr-FR", {
                 dateStyle: "full",
                 timeStyle: "short",
+                timeZone: "Europe/Brussels",
               })}
             </p>
             <p className="mt-1 text-sm text-muted">

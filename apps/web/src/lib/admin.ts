@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { brusselsDayBoundsIso } from "@/lib/datetime";
 import type {
   Appointment,
   AppointmentStatus,
@@ -7,43 +8,24 @@ import type {
   Client,
 } from "@/types/database";
 
-function startOfDayIso(d = new Date()) {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x.toISOString();
-}
-
-function endOfDayIso(d = new Date()) {
-  const x = new Date(d);
-  x.setHours(23, 59, 59, 999);
-  return x.toISOString();
-}
-
 export async function fetchAdminStats() {
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  const monthEnd = new Date(
-    now.getFullYear(),
-    now.getMonth() + 1,
-    0,
-    23,
-    59,
-    59,
-  ).toISOString();
+  const monthYmd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const monthEndYmd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+  const { from: monthStart } = brusselsDayBoundsIso(monthYmd);
+  const { to: monthEnd } = brusselsDayBoundsIso(monthEndYmd);
 
-  const [
-    upcoming,
-    month,
-    clients,
-    unread,
-    articles,
-    total,
-  ] = await Promise.all([
+  const [upcoming, pending, month, clients, unread, total] = await Promise.all([
     supabase
       .from("appointments")
       .select("id", { count: "exact", head: true })
       .in("status", ["pending", "confirmed"])
       .gte("starts_at", now.toISOString()),
+    supabase
+      .from("appointments")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
     supabase
       .from("appointments")
       .select("id", { count: "exact", head: true })
@@ -54,19 +36,19 @@ export async function fetchAdminStats() {
       .from("messages")
       .select("id", { count: "exact", head: true })
       .eq("read", false),
-    supabase
-      .from("articles")
-      .select("id", { count: "exact", head: true })
-      .eq("published", true),
     supabase.from("appointments").select("id", { count: "exact", head: true }),
   ]);
 
+  const results = [upcoming, pending, month, clients, unread, total];
+  const firstError = results.find((r) => r.error)?.error;
+  if (firstError) throw firstError;
+
   return {
     upcoming: upcoming.count ?? 0,
+    pending: pending.count ?? 0,
     appointmentsMonth: month.count ?? 0,
     clientsTotal: clients.count ?? 0,
     messagesUnread: unread.count ?? 0,
-    articlesPublished: articles.count ?? 0,
     appointmentsTotal: total.count ?? 0,
   };
 }
@@ -91,9 +73,10 @@ export async function fetchAppointments(opts?: {
 }
 
 export async function fetchTodayAppointments() {
+  const { from, to } = brusselsDayBoundsIso();
   return fetchAppointments({
-    from: startOfDayIso(),
-    to: endOfDayIso(),
+    from,
+    to,
     status: ["pending", "confirmed"],
   });
 }
@@ -152,6 +135,30 @@ export async function createAvailabilityWindow(input: {
   const { data, error } = await supabase
     .from("availability_windows")
     .insert({ ...input, is_active: true })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as AvailabilityWindow;
+}
+
+export async function updateAvailabilityWindow(
+  id: string,
+  input: {
+    day_of_week: number;
+    start_time: string;
+    end_time: string;
+    is_active?: boolean;
+  },
+) {
+  const { data, error } = await supabase
+    .from("availability_windows")
+    .update({
+      day_of_week: input.day_of_week,
+      start_time: input.start_time,
+      end_time: input.end_time,
+      ...(input.is_active !== undefined ? { is_active: input.is_active } : {}),
+    })
+    .eq("id", id)
     .select()
     .single();
   if (error) throw error;

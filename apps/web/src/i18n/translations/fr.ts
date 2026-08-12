@@ -284,6 +284,7 @@ export const fr = {
     nextMonth: "Mois suivant",
     loadingSlots: "Chargement des créneaux…",
     noSlots: "Aucun créneau disponible pour cette date.",
+    slotsError: "Impossible de charger les créneaux. Réessayez dans un instant.",
     selectSlot: "Sélectionnez un créneau horaire.",
     formInvalid: "Veuillez corriger les champs indiqués en rouge.",
     slotTaken: "Ce créneau n'est plus disponible. Choisissez un autre horaire.",

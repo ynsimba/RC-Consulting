@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -18,6 +18,11 @@ const BookingPage = lazy(() => import("@/pages/BookingPage"));
 const ManageAppointmentPage = lazy(
   () => import("@/pages/ManageAppointmentPage"),
 );
+const ManageTokenRedirect = lazy(() =>
+  import("@/pages/ManageAppointmentPage").then((m) => ({
+    default: m.ManageTokenRedirect,
+  })),
+);
 const AppointmentHistoryPage = lazy(
   () => import("@/pages/AppointmentHistoryPage"),
 );
@@ -33,11 +38,8 @@ const ClientsPage = lazy(() => import("@/pages/admin/ClientsPage"));
 const AppointmentsAdminPage = lazy(
   () => import("@/pages/admin/AppointmentsAdminPage"),
 );
-const BlogAdminPage = lazy(() => import("@/pages/admin/BlogAdminPage"));
-const FaqAdminPage = lazy(() => import("@/pages/admin/FaqAdminPage"));
 const MessagesPage = lazy(() => import("@/pages/admin/MessagesPage"));
 const AvailabilityPage = lazy(() => import("@/pages/admin/AvailabilityPage"));
-const StatsPage = lazy(() => import("@/pages/admin/StatsPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,7 +62,7 @@ export default function App() {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <HashRouter>
+        <BrowserRouter>
           <ScrollToTop />
           <Suspense fallback={<PageLoader />}>
             <Routes>
@@ -77,8 +79,12 @@ export default function App() {
                 <Route path="faq" element={<FaqPage />} />
                 <Route path="rendez-vous" element={<BookingPage />} />
                 <Route
-                  path="rendez-vous/gerer/:token"
+                  path="rendez-vous/gerer"
                   element={<ManageAppointmentPage />}
+                />
+                <Route
+                  path="rendez-vous/gerer/:token"
+                  element={<ManageTokenRedirect />}
                 />
                 <Route
                   path="rendez-vous/historique"
@@ -98,17 +104,14 @@ export default function App() {
                 <Route path="agenda" element={<AgendaPage />} />
                 <Route path="clients" element={<ClientsPage />} />
                 <Route path="rendez-vous" element={<AppointmentsAdminPage />} />
-                <Route path="blog" element={<BlogAdminPage />} />
-                <Route path="faq" element={<FaqAdminPage />} />
                 <Route path="messages" element={<MessagesPage />} />
                 <Route path="disponibilites" element={<AvailabilityPage />} />
-                <Route path="statistiques" element={<StatsPage />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
-        </HashRouter>
+        </BrowserRouter>
       </QueryClientProvider>
     </HelmetProvider>
   );

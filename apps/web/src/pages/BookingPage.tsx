@@ -12,6 +12,12 @@ import {
   fetchAvailableSlots,
   fetchSettings,
 } from "@/lib/bookings";
+import {
+  brusselsWallToIso,
+  nextWeekday,
+  startOfLocalDay,
+  toLocalYmd,
+} from "@/lib/datetime";
 import { Seo } from "@/lib/seo";
 import { PageHero } from "@/components/ui/PageHero";
 import { Button } from "@/components/ui/Button";
@@ -30,32 +36,18 @@ const bookingFormSchema = createAppointmentSchema
   .extend({
     phone: z
       .string()
-      .min(10, "Numéro de téléphone incomplet")
+      .min(8, "Numéro de téléphone incomplet")
       .max(30)
-      .regex(/^\+[1-9]\d{7,14}$/, "Numéro de téléphone invalide"),
+      .refine(
+        (v) => /^\+[1-9]\d{7,14}$/.test(v.replace(/[\s().-]/g, "")),
+        "Numéro de téléphone invalide",
+      ),
     description: z
       .string()
       .min(5, "Description trop courte (5 caractères min.)")
       .max(5000),
   });
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
-
-function addDays(base: Date, n: number) {
-  const d = new Date(base);
-  d.setDate(d.getDate() + n);
-  return d;
-}
-
-function startOfDay(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
-
-function toYmd(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
 
 function monthKey(year: number, month: number) {
   return year * 12 + month;
@@ -85,27 +77,24 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 export default function BookingPage() {
   const { lang, t } = useLanguage();
   const locale = lang === "en" ? "en-GB" : "fr-FR";
-  const today = useMemo(() => startOfDay(new Date()), []);
-  const minDate = useMemo(() => addDays(today, 1), [today]);
+  const today = useMemo(() => startOfLocalDay(new Date()), []);
+  const minDate = useMemo(() => nextWeekday(today, 1), [today]);
   const maxDate = useMemo(() => {
     const d = new Date(
       today.getFullYear(),
       today.getMonth() + MAX_MONTHS_AHEAD,
       today.getDate(),
     );
-    return startOfDay(d);
+    return startOfLocalDay(d);
   }, [today]);
 
   const [duration, setDuration] = useState<AppointmentDuration>(60);
-  const [date, setDate] = useState(toYmd(minDate));
+  const [date, setDate] = useState(toLocalYmd(minDate));
   const [viewYear, setViewYear] = useState(minDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(minDate.getMonth());
   const [time, setTime] = useState<string | null>(null);
   const [slotError, setSlotError] = useState<string | null>(null);
-  const [confirmed, setConfirmed] = useState<{
-    manageToken: string;
-    startsAt: string;
-  } | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
 
   const settingsQuery = useQuery({
     queryKey: ["booking-settings"],
@@ -144,7 +133,7 @@ export default function BookingPage() {
   function isSelectable(d: Date) {
     const day = d.getDay();
     if (day === 0 || day === 6) return false;
-    const t0 = startOfDay(d).getTime();
+    const t0 = startOfLocalDay(d).getTime();
     return t0 >= minDate.getTime() && t0 <= maxDate.getTime();
   }
 
@@ -155,6 +144,8 @@ export default function BookingPage() {
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
+    mode: "onSubmit",
+    reValidateMode: "onChange",
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -164,6 +155,11 @@ export default function BookingPage() {
       description: "",
     },
   });
+
+  const fieldErrors = form.formState.errors;
+  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
+  const showFormErrorBanner =
+    form.formState.isSubmitted && (hasFieldErrors || Boolean(slotError));
 
   const mutation = useMutation({
     mutationFn: async (data: BookingFormValues & { startsAt: string }) => {
@@ -175,15 +171,15 @@ export default function BookingPage() {
         subject: data.subject,
         description: data.description,
         duration,
-        startsAt: new Date(data.startsAt).toISOString(),
+        startsAt: data.startsAt,
       });
       return {
         manageToken: appt.manage_token,
         startsAt: appt.starts_at,
       };
     },
-    onSuccess: (data) => {
-      setConfirmed(data);
+    onSuccess: () => {
+      setConfirmed(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
   });
@@ -197,7 +193,7 @@ export default function BookingPage() {
     mutation.mutate({
       ...values,
       phone: values.phone.replace(/\s/g, ""),
-      startsAt: `${date}T${time}:00`,
+      startsAt: brusselsWallToIso(date, time),
     });
   }
 
@@ -227,22 +223,6 @@ export default function BookingPage() {
           title={t.booking.confirmedTitle}
           subtitle={t.booking.confirmedSubtitle}
         />
-        <section className="py-8 md:py-10">
-          <div className="container-rc max-w-xl text-center">
-            <p className="text-base text-muted">{t.booking.confirmedText}</p>
-            <p className="mt-3 font-semibold">
-              {new Date(confirmed.startsAt).toLocaleString(locale, {
-                dateStyle: "full",
-                timeStyle: "short",
-              })}
-            </p>
-            <div className="mt-6">
-              <Button to={`/rendez-vous/gerer/${confirmed.manageToken}`}>
-                {t.booking.manage}
-              </Button>
-            </div>
-          </div>
-        </section>
       </>
     );
   }
@@ -349,7 +329,7 @@ export default function BookingPage() {
                       if (!d) {
                         return <div key={`empty-${i}`} className="h-7" />;
                       }
-                      const ymd = toYmd(d);
+                      const ymd = toLocalYmd(d);
                       const selectable = isSelectable(d);
                       const selected = date === ymd;
                       return (
@@ -385,13 +365,19 @@ export default function BookingPage() {
                   {slotsQuery.isLoading && (
                     <p className="text-xs text-muted">{t.booking.loadingSlots}</p>
                   )}
+                  {slotsQuery.isError && (
+                    <p className="text-xs leading-relaxed text-red-700" role="alert">
+                      {t.booking.slotsError}
+                    </p>
+                  )}
                   {!slotsQuery.isLoading &&
+                    !slotsQuery.isError &&
                     (slotsQuery.data?.length ?? 0) === 0 && (
                       <p className="text-xs leading-relaxed text-muted">
                         {t.booking.noSlots}
                       </p>
                     )}
-                  <div className="grid max-h-[14rem] grid-cols-3 gap-1.5 overflow-y-auto overscroll-contain pr-0.5 sm:max-h-[12.5rem] sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="flex max-h-[16rem] flex-col gap-1.5 overflow-y-auto overscroll-contain pr-0.5 sm:grid sm:max-h-[12.5rem] sm:grid-cols-2 sm:gap-1.5 lg:grid-cols-3">
                     {(slotsQuery.data ?? []).map((slot: string) => (
                       <button
                         key={slot}
@@ -400,7 +386,7 @@ export default function BookingPage() {
                           setTime(slot);
                           setSlotError(null);
                         }}
-                        className={`min-h-10 border px-1.5 py-2 text-xs font-semibold transition sm:min-h-0 sm:py-1.5 ${
+                        className={`min-h-11 w-full border px-3 py-2.5 text-left text-sm font-semibold transition sm:min-h-0 sm:px-1.5 sm:py-1.5 sm:text-center sm:text-xs ${
                           time === slot
                             ? "border-gold bg-gold text-white"
                             : "border-line hover:border-gold"
@@ -419,28 +405,32 @@ export default function BookingPage() {
               </div>
 
               {/* Colonne formulaire */}
-              <div className="p-3 sm:p-3.5">
-                <p className="mb-2 text-[10px] font-semibold tracking-wide text-muted uppercase">
+              <div className="border-t border-line p-4 sm:border-t-0 sm:p-3.5 md:p-5">
+                <p className="mb-3 text-[10px] font-semibold tracking-wide text-muted uppercase sm:mb-2">
                   {t.booking.step4}
                 </p>
                 <form
-                  className="grid grid-cols-1 gap-x-2.5 gap-y-2.5 sm:grid-cols-2"
+                  className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-x-2.5 sm:gap-y-2.5"
                   onSubmit={form.handleSubmit(onSubmit, onInvalid)}
                   noValidate
                 >
                   <Input
                     label={t.booking.firstName}
+                    autoComplete="given-name"
                     error={form.formState.errors.firstName?.message}
                     {...form.register("firstName")}
                   />
                   <Input
                     label={t.booking.lastName}
+                    autoComplete="family-name"
                     error={form.formState.errors.lastName?.message}
                     {...form.register("lastName")}
                   />
                   <Input
                     label={t.booking.email}
                     type="email"
+                    autoComplete="email"
+                    inputMode="email"
                     error={form.formState.errors.email?.message}
                     {...form.register("email")}
                   />
@@ -459,45 +449,52 @@ export default function BookingPage() {
                       />
                     )}
                   />
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <Input
                       label={t.booking.subject}
                       error={form.formState.errors.subject?.message}
                       {...form.register("subject")}
                     />
                   </div>
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <label className="block text-sm">
                       <FieldLabel>{t.booking.description}</FieldLabel>
                       <textarea
-                        rows={2}
-                        className="w-full border border-line px-2.5 py-1.5 text-sm focus:border-gold focus:outline-none"
+                        rows={3}
+                        className="min-h-[5.5rem] w-full border border-line px-3 py-2.5 text-base leading-relaxed focus:border-gold focus:outline-none sm:min-h-0 sm:px-2.5 sm:py-1.5 sm:text-sm"
                         {...form.register("description")}
                       />
                       {form.formState.errors.description && (
-                        <span className="mt-0.5 block text-[11px] text-red-600">
+                        <span className="mt-1 block text-[11px] text-red-600">
                           {form.formState.errors.description.message}
                         </span>
                       )}
                     </label>
                   </div>
-                  {form.formState.isSubmitted && !form.formState.isValid && (
-                    <p className="col-span-2 text-xs text-red-700" role="alert">
-                      {t.booking.formInvalid}
+                  {showFormErrorBanner && (
+                    <p
+                      className="text-xs leading-relaxed text-red-700 sm:col-span-2"
+                      role="alert"
+                    >
+                      {hasFieldErrors ? t.booking.formInvalid : slotError}
                     </p>
                   )}
                   {mutation.isError && (
-                    <p className="col-span-2 text-xs text-red-700" role="alert">
-                      {(mutation.error as Error).message === "Créneau indisponible"
+                    <p
+                      className="text-xs leading-relaxed text-red-700 sm:col-span-2"
+                      role="alert"
+                    >
+                      {(mutation.error as Error).message ===
+                      "Créneau indisponible"
                         ? t.booking.slotTaken
                         : (mutation.error as Error).message}
                     </p>
                   )}
-                  <div className="col-span-2 pt-0.5">
+                  <div className="sticky bottom-0 -mx-4 mt-1 border-t border-line bg-white px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:col-span-2 sm:mx-0 sm:mt-0 sm:border-0 sm:bg-transparent sm:px-0 sm:pt-0.5 sm:pb-0">
                     <Button
                       type="submit"
                       disabled={mutation.isPending}
-                      className="w-full sm:w-auto"
+                      className="min-h-12 w-full text-sm sm:min-h-0 sm:w-auto sm:text-xs"
                     >
                       {mutation.isPending
                         ? t.booking.confirming
@@ -520,17 +517,17 @@ const Input = forwardRef<
     label: string;
     error?: string;
   }
->(function Input({ label, error, ...props }, ref) {
+>(function Input({ label, error, className = "", ...props }, ref) {
   return (
     <label className="block text-sm">
       <FieldLabel>{label}</FieldLabel>
       <input
         ref={ref}
-        className="w-full border border-line px-2.5 py-1.5 text-sm focus:border-gold focus:outline-none"
+        className={`min-h-11 w-full border border-line px-3 py-2.5 text-base focus:border-gold focus:outline-none sm:min-h-0 sm:px-2.5 sm:py-1.5 sm:text-sm ${className}`}
         {...props}
       />
       {error && (
-        <span className="mt-0.5 block text-[11px] text-red-600">{error}</span>
+        <span className="mt-1 block text-[11px] text-red-600">{error}</span>
       )}
     </label>
   );

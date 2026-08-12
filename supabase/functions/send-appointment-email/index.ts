@@ -1,5 +1,6 @@
 // Supabase Edge Function — envoi emails RDV (Resend)
 // Secrets: RESEND_API_KEY, EMAIL_FROM, EMAIL_REPLY_TO, ADMIN_NOTIFY_EMAIL
+// ADMIN_NOTIFY_EMAIL : une ou plusieurs adresses séparées par des virgules
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
@@ -235,7 +236,6 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const type = body?.type as AppointmentEmailType;
-    const vars = body?.vars as AppointmentEmailVars;
 
     if (
       !type ||
@@ -246,17 +246,151 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (!vars?.visitorEmail) {
-      return new Response(JSON.stringify({ error: "visitorEmail manquant" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
-    // new_request : public (après prise de RDV). Autres types : admin uniquement.
-    if (type !== "new_request") {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-      const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+    let vars = body?.vars as AppointmentEmailVars;
+    let idempotencyKey: string | undefined;
+
+    // new_request : lié à un RDV réel (service role), pas de vars client libres.
+    if (type === "new_request") {
+      const appointmentId = String(body?.appointmentId ?? "").trim();
+      const uuidOk =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+          .test(appointmentId);
+      if (!uuidOk) {
+        return new Response(
+          JSON.stringify({ error: "appointmentId invalide" }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+      if (!serviceKey) {
+        return new Response(
+          JSON.stringify({ error: "Service role indisponible" }),
+          {
+            status: 503,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      const admin = createClient(supabaseUrl, serviceKey);
+      const { data: appt, error: apptError } = await admin
+        .from("appointments")
+        .select(
+          "id, subject, description, duration, starts_at, status, created_at, type, client:clients(first_name, last_name, email, phone)",
+        )
+        .eq("id", appointmentId)
+        .maybeSingle();
+
+      if (apptError || !appt) {
+        return new Response(
+          JSON.stringify({ error: "Rendez-vous introuvable" }),
+          {
+            status: 404,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      const createdMs = new Date(appt.created_at as string).getTime();
+      const maxAgeMs = 15 * 60_000;
+      if (!Number.isFinite(createdMs) || Date.now() - createdMs > maxAgeMs) {
+        return new Response(
+          JSON.stringify({ error: "Fenêtre de notification expirée" }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+      if (appt.status !== "pending") {
+        return new Response(
+          JSON.stringify({ error: "Statut non éligible" }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      const clientRaw = appt.client as
+        | {
+            first_name?: string;
+            last_name?: string;
+            email?: string;
+            phone?: string | null;
+          }
+        | {
+            first_name?: string;
+            last_name?: string;
+            email?: string;
+            phone?: string | null;
+          }[]
+        | null;
+      const client = Array.isArray(clientRaw) ? clientRaw[0] : clientRaw;
+      if (!client?.email) {
+        return new Response(
+          JSON.stringify({ error: "Client introuvable" }),
+          {
+            status: 404,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      const startsAt = String(appt.starts_at);
+      const visitorName = [client.first_name, client.last_name]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+      const modalityMap: Record<string, string> = {
+        cabinet: "présentiel",
+        phone: "téléphone",
+        video: "visioconférence",
+      };
+      const apptType = String(appt.type ?? "cabinet");
+
+      vars = {
+        visitorName: visitorName || "Madame, Monsieur",
+        visitorEmail: client.email,
+        visitorPhone: client.phone ?? undefined,
+        appointmentDate: new Date(startsAt).toLocaleDateString("fr-FR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          timeZone: "Europe/Brussels",
+        }),
+        appointmentTime: new Date(startsAt).toLocaleTimeString("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: "Europe/Brussels",
+        }),
+        modality: modalityMap[apptType] ?? apptType,
+        location: "Clos des Rosacées, 4 – 1080 Bruxelles",
+        subject: String(appt.subject ?? ""),
+        staffName: "Me Charlotte Richard",
+        description: String(appt.description ?? ""),
+        duration: `${appt.duration} min`,
+      };
+      idempotencyKey = `new_request:${appointmentId}`;
+    } else {
+      if (!vars?.visitorEmail) {
+        return new Response(
+          JSON.stringify({ error: "visitorEmail manquant" }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
       const authHeader = req.headers.get("Authorization");
       if (!authHeader) {
         return new Response(JSON.stringify({ error: "Non authentifié" }), {
@@ -297,33 +431,57 @@ Deno.serve(async (req) => {
       }
     }
 
+    if (!vars?.visitorEmail) {
+      return new Response(JSON.stringify({ error: "visitorEmail manquant" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const apiKey = Deno.env.get("RESEND_API_KEY");
     const from =
       Deno.env.get("EMAIL_FROM") ??
       "RC Consulting <noreply@resend.dev>";
-    const adminNotify =
-      Deno.env.get("ADMIN_NOTIFY_EMAIL") ?? "yvesnsimba01@gmail.com";
+    const adminNotifyRaw =
+      Deno.env.get("ADMIN_NOTIFY_EMAIL") ??
+      "contact@rc-consulting-legal.com,charlotte.richard@rc-consulting-legal.com";
+    const adminNotify = adminNotifyRaw
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean);
     const defaultReplyTo = Deno.env.get("EMAIL_REPLY_TO") ?? undefined;
 
     const subject = subjectFor(type, vars);
     const html = htmlFor(type, vars);
 
-    // Destinataire : admin pour new_request, client pour les autres.
+    // Destinataire : admins pour new_request, client pour les autres.
     // Reply-To client pour new_request → l'admin peut répondre directement.
     const to =
-      type === "new_request" ? [adminNotify] : [vars.visitorEmail];
+      type === "new_request" ? adminNotify : [vars.visitorEmail];
     const replyTo =
       type === "new_request"
         ? vars.visitorEmail
         : defaultReplyTo;
 
     if (!apiKey) {
-      console.log("[email:dev]", subject, "→", to);
-      console.log(html);
+      console.error("[email] RESEND_API_KEY manquant");
       return new Response(
-        JSON.stringify({ id: "dev-log", warning: "RESEND_API_KEY manquant" }),
+        JSON.stringify({
+          error:
+            "RESEND_API_KEY manquant — configurez le secret Supabase puis redéployez.",
+        }),
         {
-          status: 200,
+          status: 503,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    if (type === "new_request" && adminNotify.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "ADMIN_NOTIFY_EMAIL non configuré" }),
+        {
+          status: 503,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
@@ -337,12 +495,17 @@ Deno.serve(async (req) => {
     };
     if (replyTo) resendPayload.reply_to = replyTo;
 
+    const resendHeaders: Record<string, string> = {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    };
+    if (idempotencyKey) {
+      resendHeaders["Idempotency-Key"] = idempotencyKey;
+    }
+
     const resendRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
+      headers: resendHeaders,
       body: JSON.stringify(resendPayload),
     });
 

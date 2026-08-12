@@ -38,8 +38,8 @@ export function PhoneInput({
   const resolvedInputClass =
     inputClassName ??
     (compact
-      ? "w-full border-0 bg-transparent px-2.5 py-1.5 text-sm focus:outline-none"
-      : "w-full border-0 bg-transparent px-3 py-2.5 focus:outline-none");
+      ? "min-h-11 w-full border-0 bg-transparent px-3 py-2.5 text-base focus:outline-none sm:min-h-0 sm:px-2.5 sm:py-1.5 sm:text-sm"
+      : "w-full border-0 bg-transparent px-3 py-2.5 text-base focus:outline-none sm:text-sm");
   const { lang, t } = useLanguage();
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -136,7 +136,7 @@ export function PhoneInput({
       </span>
       <div
         ref={rootRef}
-        className="relative flex border border-line focus-within:border-gold"
+        className="relative flex min-h-11 border border-line focus-within:border-gold sm:min-h-0"
       >
         <button
           type="button"
@@ -145,7 +145,9 @@ export function PhoneInput({
           aria-controls={listId}
           onClick={() => setOpen((v) => !v)}
           className={`inline-flex shrink-0 items-center gap-1.5 border-r border-line text-sm hover:bg-soft ${
-            compact ? "px-2 py-1.5" : "px-2.5 py-2.5"
+            compact
+              ? "min-h-11 px-2.5 py-2 sm:min-h-0 sm:px-2 sm:py-1.5"
+              : "px-2.5 py-2.5"
           }`}
         >
           <span aria-hidden className="text-base leading-none">
@@ -177,7 +179,7 @@ export function PhoneInput({
           <div
             id={listId}
             role="listbox"
-            className="absolute top-full left-0 z-30 mt-1 max-h-72 w-[min(100%,22rem)] overflow-hidden border border-line bg-white shadow-lg"
+            className="absolute top-full left-0 z-30 mt-1 max-h-[min(18rem,50vh)] w-full min-w-[16rem] overflow-hidden border border-line bg-white shadow-lg sm:w-[min(100%,22rem)]"
           >
             <div className="border-b border-line p-2">
               <input
@@ -186,10 +188,10 @@ export function PhoneInput({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t.common.searchCountry}
-                className="w-full border border-line px-2.5 py-2 text-sm focus:border-gold focus:outline-none"
+                className="w-full border border-line px-2.5 py-2.5 text-base focus:border-gold focus:outline-none sm:py-2 sm:text-sm"
               />
             </div>
-            <ul className="max-h-56 overflow-y-auto">
+            <ul className="max-h-56 overflow-y-auto overscroll-contain">
               {countries.map((c) => {
                 const name = lang === "en" ? c.nameEn : c.nameFr;
                 const selected = c.iso2 === iso2;
@@ -200,7 +202,7 @@ export function PhoneInput({
                       role="option"
                       aria-selected={selected}
                       onClick={() => selectCountry(c)}
-                      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-soft ${
+                      className={`flex min-h-11 w-full items-center gap-2 px-3 py-2.5 text-left text-sm hover:bg-soft sm:min-h-0 sm:py-2 ${
                         selected ? "bg-gold/10" : ""
                       }`}
                     >

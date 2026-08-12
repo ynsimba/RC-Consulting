@@ -7,6 +7,10 @@ type SeoProps = {
   image?: string;
   type?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Empêche l’indexation (pages token / privées). */
+  noIndex?: boolean;
+  /** Politique Referer (ex. pages avec secret dans le fragment). */
+  referrer?: "no-referrer" | "strict-origin-when-cross-origin";
 };
 
 const SITE = "https://rcconsulting.be";
@@ -20,6 +24,8 @@ export function Seo({
   image = DEFAULT_IMAGE,
   type = "website",
   jsonLd,
+  noIndex = false,
+  referrer,
 }: SeoProps) {
   const url = `${SITE}${path}`;
   const fullTitle = title.includes("RC Consulting")
@@ -31,6 +37,8 @@ export function Seo({
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={url} />
+      {noIndex && <meta name="robots" content="noindex, nofollow" />}
+      {referrer && <meta name="referrer" content={referrer} />}
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:type" content={type} />

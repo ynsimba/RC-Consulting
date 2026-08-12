@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
+import { manageAppointmentHref } from "@/lib/manageToken";
 import { Seo } from "@/lib/seo";
 import { PageHero } from "@/components/ui/PageHero";
 import { Button } from "@/components/ui/Button";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 
 type Appointment = {
   id: string;
@@ -61,7 +63,7 @@ export default function AppointmentHistoryPage() {
                         </p>
                       </div>
                       <Link
-                        to={`/rendez-vous/gerer/${a.manageToken}`}
+                        to={manageAppointmentHref(a.manageToken)}
                         className="text-sm text-gold uppercase tracking-wide"
                       >
                         Gérer
@@ -115,12 +117,11 @@ function LoginForm({
         placeholder="Email"
         className="w-full border border-line px-4 py-3"
       />
-      <input
+      <PasswordInput
         name="password"
-        type="password"
         required
+        autoComplete="current-password"
         placeholder="Mot de passe"
-        className="w-full border border-line px-4 py-3"
       />
       {error && <p className="text-sm text-red-600">{error}</p>}
       <Button type="submit">Se connecter</Button>

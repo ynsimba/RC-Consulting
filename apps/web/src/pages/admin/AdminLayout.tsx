@@ -9,9 +9,6 @@ const links = [
   ["clients", "Clients"],
   ["disponibilites", "Disponibilités"],
   ["messages", "Messages"],
-  ["blog", "Blog"],
-  ["faq", "FAQ"],
-  ["statistiques", "Statistiques"],
 ];
 
 export default function AdminLayout() {

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-/** Remonte en haut à chaque changement de route (HashRouter inclus). */
+/** Remonte en haut à chaque changement de route. */
 export function ScrollToTop() {
   const { pathname, search, hash } = useLocation();
 

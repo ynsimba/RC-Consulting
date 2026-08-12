@@ -283,6 +283,7 @@ export const en: TranslationDict = {
     nextMonth: "Next month",
     loadingSlots: "Loading available slots…",
     noSlots: "No slots available for this date.",
+    slotsError: "Unable to load time slots. Please try again shortly.",
     selectSlot: "Please select a time slot.",
     formInvalid: "Please correct the fields marked in red.",
     slotTaken: "This slot is no longer available. Please choose another time.",

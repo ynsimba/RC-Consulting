@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchClients } from "@/lib/admin";
+import { downloadClientsExcel } from "@/lib/exportClientsExcel";
 import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/Button";
 
 export default function ClientsPage() {
   const qc = useQueryClient();
@@ -23,12 +25,25 @@ export default function ClientsPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <h1 className="text-xl font-bold tracking-wide uppercase sm:text-2xl">
-        Clients
-      </h1>
-      <p className="mt-0.5 text-xs text-muted sm:text-sm">
-        Coordonnées issues des prises de rendez-vous.
-      </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-xl font-bold tracking-wide uppercase sm:text-2xl">
+            Clients
+          </h1>
+          <p className="mt-0.5 text-xs text-muted sm:text-sm">
+            Coordonnées issues des prises de rendez-vous.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full sm:w-auto"
+          disabled={isLoading || data.length === 0}
+          onClick={() => downloadClientsExcel(data)}
+        >
+          Télécharger Excel
+        </Button>
+      </div>
 
       {isLoading && <p className="mt-3 text-sm text-muted">Chargement…</p>}
 

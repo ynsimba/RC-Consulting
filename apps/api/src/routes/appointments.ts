@@ -79,9 +79,9 @@ appointmentsRouter.post("/", async (req, res, next) => {
       include: { client: true },
     });
 
-    const manageUrl = `${env.webUrl}/rendez-vous/gerer/${appointment.manageToken}`;
-    const notify = env.adminNotifyEmail;
-    const recipients = [...new Set([client.email, notify])];
+    const manageUrl = `${env.webUrl}/rendez-vous/gerer#${appointment.manageToken}`;
+    const notify = env.adminNotifyEmails;
+    const recipients = [...new Set([client.email, ...notify])];
 
     try {
       await sendEmail({
@@ -177,7 +177,7 @@ appointmentsRouter.patch("/manage/:token", async (req, res, next) => {
         include: { client: true },
       });
       await sendEmail({
-        to: [...new Set([existing.client.email, env.adminNotifyEmail])],
+        to: [...new Set([existing.client.email, ...env.adminNotifyEmails])],
         subject: "Annulation de rendez-vous — RC Consulting",
         html: `<p>Votre rendez-vous du ${existing.startsAt.toLocaleString("fr-FR")} a été annulé.</p>`,
       });
@@ -207,7 +207,7 @@ appointmentsRouter.patch("/manage/:token", async (req, res, next) => {
     });
 
     await sendEmail({
-      to: [...new Set([existing.client.email, env.adminNotifyEmail])],
+      to: [...new Set([existing.client.email, ...env.adminNotifyEmails])],
       subject: "Modification de rendez-vous — RC Consulting",
       html: `<p>Votre rendez-vous a été modifié : ${startsAt.toLocaleString("fr-FR")}.</p>`,
     });

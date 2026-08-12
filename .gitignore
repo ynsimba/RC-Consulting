@@ -15,5 +15,8 @@ uploads
 *.zip
 apps/web/rc-front-hostinger.zip
 apps/web/rc-front-hostinger/
+apps/web/rc-front-hostinger */
 hostinger-dist
 tmp
+supabase/.temp/
+supabase/.branches/

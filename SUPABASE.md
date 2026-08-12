@@ -47,14 +47,15 @@ supabase secrets set \
   RESEND_API_KEY=re_xxxxxxxx \
   EMAIL_FROM="RC Consulting <noreply@votredomaine.com>" \
   EMAIL_REPLY_TO=rc.consulting.pro@gmail.com \
-  ADMIN_NOTIFY_EMAIL=yvesnsimba01@gmail.com
+  ADMIN_NOTIFY_EMAIL=contact@rc-consulting-legal.com,charlotte.richard@rc-consulting-legal.com
 ```
 
 - `EMAIL_FROM` : adresse **noreply** vérifiée chez Resend (domaine ou `onboarding@resend.dev` en test).
 - `EMAIL_REPLY_TO` : boîte réelle du cabinet (utile pour l’email de modification).
-- `ADMIN_NOTIFY_EMAIL` : reçoit un email à **chaque nouvelle demande** de RDV (défaut code : `yvesnsimba01@gmail.com`).
+- `ADMIN_NOTIFY_EMAIL` : une ou plusieurs adresses (séparées par des virgules) notifiées à **chaque nouvelle demande** de RDV.
+  Défaut : `contact@rc-consulting-legal.com` et `charlotte.richard@rc-consulting-legal.com`.
 
-À chaque prise de RDV publique, l’admin reçoit : client, email, téléphone, créneau, objet, message.  
+À chaque prise de RDV publique, ces boîtes reçoivent : client, email, téléphone, créneau, objet, message.  
 Reply-To = email du client (réponse directe possible).
 
 ### Test manuel des templates

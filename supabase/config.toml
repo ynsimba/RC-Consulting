@@ -1,0 +1,3 @@
+# Edge Function publique pour new_request (anon JWT = clé publishable)
+[functions.send-appointment-email]
+verify_jwt = true
