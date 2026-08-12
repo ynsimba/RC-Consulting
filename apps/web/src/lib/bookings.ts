@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { Appointment, AppointmentStatus } from "@/types/database";
+import { notifyAdminNewAppointment } from "@/lib/emails/notifyAdmin";
 
 export async function fetchAvailableSlots(date: string, duration: number) {
   const { data, error } = await supabase.rpc("get_available_slots", {
@@ -34,7 +35,25 @@ export async function createPublicAppointment(input: {
     p_type: "cabinet",
   });
   if (error) throw error;
-  return data as Appointment;
+  const appointment = data as Appointment;
+
+  // Non bloquant : la demande reste enregistrée même si l'email admin échoue.
+  void notifyAdminNewAppointment({
+    firstName: input.firstName,
+    lastName: input.lastName,
+    email: input.email,
+    phone: input.phone,
+    subject: input.subject,
+    description: input.description,
+    duration: input.duration,
+    startsAt: appointment.starts_at ?? input.startsAt,
+  }).then((result) => {
+    if (!result.ok) {
+      console.error("[booking] notification admin non envoyée:", result.error);
+    }
+  });
+
+  return appointment;
 }
 
 export async function getAppointmentByToken(token: string) {

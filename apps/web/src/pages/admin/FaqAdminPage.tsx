@@ -57,10 +57,12 @@ export default function FaqAdminPage() {
   });
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold uppercase tracking-wide">FAQ</h1>
+    <div className="mx-auto max-w-3xl space-y-5 sm:space-y-8">
+      <h1 className="text-xl font-bold tracking-wide uppercase sm:text-2xl">
+        FAQ
+      </h1>
       <form
-        className="space-y-3 border border-line bg-white p-6"
+        className="space-y-2.5 border border-line bg-white p-3 sm:space-y-3 sm:p-5"
         onSubmit={(e) => {
           e.preventDefault();
           create.mutate();
@@ -76,7 +78,7 @@ export default function FaqAdminPage() {
         <textarea
           className="w-full border border-line px-3 py-2"
           placeholder="Réponse (FR)"
-          rows={4}
+          rows={3}
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           required
@@ -90,34 +92,34 @@ export default function FaqAdminPage() {
         <textarea
           className="w-full border border-line px-3 py-2"
           placeholder="Answer (EN)"
-          rows={4}
+          rows={3}
           value={answerEn}
           onChange={(e) => setAnswerEn(e.target.value)}
         />
         <Button type="submit">Ajouter</Button>
       </form>
-      <ul className="space-y-3">
+      <ul className="space-y-2">
         {data.map((f) => (
-          <li key={f.id} className="border border-line bg-white p-4">
-            <div className="flex justify-between gap-4">
-              <div>
-                <p className="font-semibold">{f.question}</p>
-                <p className="mt-2 text-sm text-muted">{f.answer}</p>
+          <li key={f.id} className="border border-line bg-white p-3 sm:p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold leading-snug">{f.question}</p>
+                <p className="mt-1.5 text-xs text-muted sm:text-sm">{f.answer}</p>
                 {f.questionEn && (
-                  <p className="mt-3 text-sm font-semibold text-ink/80">
+                  <p className="mt-2 text-xs font-semibold text-ink/80">
                     EN — {f.questionEn}
                   </p>
                 )}
                 {f.answerEn && (
-                  <p className="mt-1 text-sm text-muted">{f.answerEn}</p>
+                  <p className="mt-0.5 text-xs text-muted">{f.answerEn}</p>
                 )}
               </div>
               <button
                 type="button"
-                className="text-xs text-red-600 uppercase"
+                className="shrink-0 text-[10px] font-semibold tracking-wide text-red-600 uppercase sm:text-xs"
                 onClick={() => del.mutate(f.id)}
               >
-                Supprimer
+                Suppr.
               </button>
             </div>
           </li>

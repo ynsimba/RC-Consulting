@@ -1,8 +1,9 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 const HomePage = lazy(() => import("@/pages/HomePage"));
 const AboutPage = lazy(() => import("@/pages/AboutPage"));
@@ -49,7 +50,7 @@ const queryClient = new QueryClient({
 
 function PageLoader() {
   return (
-    <div className="grid min-h-[40vh] place-items-center text-sm tracking-wide text-muted uppercase">
+    <div className="grid min-h-[50vh] place-items-start justify-center pt-24 text-sm tracking-wide text-muted uppercase">
       Chargement…
     </div>
   );
@@ -59,7 +60,8 @@ export default function App() {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+        <HashRouter>
+          <ScrollToTop />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route element={<MainLayout />}>
@@ -106,7 +108,7 @@ export default function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
-        </BrowserRouter>
+        </HashRouter>
       </QueryClientProvider>
     </HelmetProvider>
   );

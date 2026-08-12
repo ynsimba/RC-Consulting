@@ -38,7 +38,11 @@ export default function BlogArticlePage() {
   });
 
   if (isLoading) {
-    return <div className="container-rc py-24 text-muted">Chargement…</div>;
+    return (
+      <div className="container-rc pt-16 pb-24 text-sm tracking-wide text-muted uppercase">
+        Chargement…
+      </div>
+    );
   }
 
   if (isError || !data) {

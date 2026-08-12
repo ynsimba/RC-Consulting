@@ -65,20 +65,22 @@ export default function BlogAdminPage() {
   });
 
   return (
-    <div className="space-y-10">
+    <div className="mx-auto max-w-4xl space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-2xl font-bold uppercase tracking-wide">Blog</h1>
-        <p className="mt-2 text-muted">CRUD des articles.</p>
+        <h1 className="text-xl font-bold tracking-wide uppercase sm:text-2xl">
+          Blog
+        </h1>
+        <p className="mt-0.5 text-xs text-muted sm:text-sm">CRUD des articles.</p>
       </div>
 
       <form
-        className="grid gap-3 border border-line bg-white p-6 md:grid-cols-2"
+        className="grid gap-2.5 border border-line bg-white p-3 sm:gap-3 sm:p-5 md:grid-cols-2"
         onSubmit={(e) => {
           e.preventDefault();
           create.mutate();
         }}
       >
-        <h2 className="md:col-span-2 font-semibold uppercase tracking-wide">
+        <h2 className="text-sm font-semibold tracking-wide uppercase md:col-span-2">
           Nouvel article
         </h2>
         <input
@@ -149,24 +151,26 @@ export default function BlogAdminPage() {
         </div>
       </form>
 
-      <ul className="space-y-3">
+      <ul className="space-y-2">
         {articles.map((a) => (
           <li
             key={a.id}
-            className="flex flex-wrap items-center justify-between gap-3 border border-line bg-white p-4"
+            className="flex items-start justify-between gap-2 border border-line bg-white p-3 sm:items-center sm:gap-3 sm:p-4"
           >
-            <div>
-              <p className="font-semibold">{a.title}</p>
-              <p className="text-xs text-muted">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold leading-snug sm:text-base">
+                {a.title}
+              </p>
+              <p className="mt-0.5 truncate text-[11px] text-muted sm:text-xs">
                 /{a.slug} — {a.published ? "Publié" : "Brouillon"}
               </p>
             </div>
             <button
               type="button"
-              className="text-xs text-red-600 uppercase"
+              className="shrink-0 text-[10px] font-semibold tracking-wide text-red-600 uppercase sm:text-xs"
               onClick={() => del.mutate(a.id)}
             >
-              Supprimer
+              Suppr.
             </button>
           </li>
         ))}

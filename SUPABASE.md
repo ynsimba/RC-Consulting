@@ -4,8 +4,9 @@
 
 Dans le dashboard Supabase → **SQL Editor** → New query :
 
-1. Coller le contenu de [`supabase/migrations/001_init.sql`](../supabase/migrations/001_init.sql)
+1. Coller le contenu de [`supabase/migrations/001_init.sql`](supabase/migrations/001_init.sql)
 2. Run
+3. (Optionnel) Coller [`supabase/migrations/002_fix_slots.sql`](supabase/migrations/002_fix_slots.sql) si les créneaux plantent
 
 Cela crée tables, RLS, RPC (`get_available_slots`, `create_public_appointment`, `manage_appointment_by_token`) et les horaires Lun–Ven 08:30–18:00.
 
@@ -31,7 +32,42 @@ VITE_SUPABASE_ANON_KEY=sb_publishable_…   # ou ancienne anon key
 
 L’URL se trouve dans **Project Settings → API**.
 
-## 4. Lancer le front
+## 4. Emails admin (confirm / refuse / modify)
+
+Le front appelle l’Edge Function `send-appointment-email` (Resend) après chaque action admin.  
+La mise à jour en base **n’est pas annulée** si l’email échoue ; l’admin reçoit une alerte.
+
+### Déployer la fonction
+
+```bash
+# CLI Supabase liée au projet
+supabase functions deploy send-appointment-email
+
+supabase secrets set \
+  RESEND_API_KEY=re_xxxxxxxx \
+  EMAIL_FROM="RC Consulting <noreply@votredomaine.com>" \
+  EMAIL_REPLY_TO=rc.consulting.pro@gmail.com \
+  ADMIN_NOTIFY_EMAIL=yvesnsimba01@gmail.com
+```
+
+- `EMAIL_FROM` : adresse **noreply** vérifiée chez Resend (domaine ou `onboarding@resend.dev` en test).
+- `EMAIL_REPLY_TO` : boîte réelle du cabinet (utile pour l’email de modification).
+- `ADMIN_NOTIFY_EMAIL` : reçoit un email à **chaque nouvelle demande** de RDV (défaut code : `yvesnsimba01@gmail.com`).
+
+À chaque prise de RDV publique, l’admin reçoit : client, email, téléphone, créneau, objet, message.  
+Reply-To = email du client (réponse directe possible).
+
+### Test manuel des templates
+
+```bash
+# Prévisualise HTML dans tmp/email-previews/
+node scripts/send-test-appointment-emails.mjs
+
+# Envoi réel des 3 types (nécessite RESEND_API_KEY + TEST_TO)
+RESEND_API_KEY=re_xxx TEST_TO=vous@email.com node scripts/send-test-appointment-emails.mjs --send
+```
+
+## 5. Lancer le front
 
 ```bash
 npm run dev -w @rc/web
@@ -43,4 +79,4 @@ npm run dev -w @rc/web
 ## Notes
 
 - L’API Express (`apps/api`) n’est plus nécessaire pour le booking / admin.
-- Les emails transactionnels (Resend) ne sont pas inclus dans ce MVP ; à brancher ensuite via Edge Function si besoin.
+- Les emails transactionnels passent par Resend + Edge Function (pas de clé API dans le bundle Hostinger).

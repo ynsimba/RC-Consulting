@@ -262,7 +262,7 @@ export default function BookingPage() {
             {/* Barre résumé + durée */}
             <div className="flex flex-col gap-3 border-b border-line px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-4">
               <div
-                className="inline-flex rounded-sm border border-line p-0.5"
+                className="flex w-full rounded-sm border border-line p-0.5 sm:inline-flex sm:w-auto"
                 role="group"
                 aria-label={t.booking.step1}
               >
@@ -275,7 +275,7 @@ export default function BookingPage() {
                       setTime(null);
                       setSlotError(null);
                     }}
-                    className={`min-w-[4.25rem] px-3 py-1.5 text-xs font-semibold tracking-wide transition ${
+                    className={`min-h-10 flex-1 px-2 py-2 text-xs font-semibold tracking-wide transition sm:min-w-[4.25rem] sm:flex-none sm:px-3 sm:py-1.5 ${
                       duration === d
                         ? "bg-gold text-white"
                         : "text-ink hover:bg-soft"
@@ -286,7 +286,7 @@ export default function BookingPage() {
                 ))}
               </div>
 
-              <p className="text-xs text-muted sm:text-right">
+              <p className="text-center text-xs text-muted sm:text-right">
                 <span className="font-semibold text-ink">{selectedDateLabel}</span>
                 {time ? (
                   <>
@@ -391,7 +391,7 @@ export default function BookingPage() {
                         {t.booking.noSlots}
                       </p>
                     )}
-                  <div className="grid max-h-[12.5rem] grid-cols-3 gap-1.5 overflow-y-auto pr-0.5 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid max-h-[14rem] grid-cols-3 gap-1.5 overflow-y-auto overscroll-contain pr-0.5 sm:max-h-[12.5rem] sm:grid-cols-2 lg:grid-cols-3">
                     {(slotsQuery.data ?? []).map((slot: string) => (
                       <button
                         key={slot}
@@ -400,7 +400,7 @@ export default function BookingPage() {
                           setTime(slot);
                           setSlotError(null);
                         }}
-                        className={`border px-1.5 py-1.5 text-xs font-semibold transition ${
+                        className={`min-h-10 border px-1.5 py-2 text-xs font-semibold transition sm:min-h-0 sm:py-1.5 ${
                           time === slot
                             ? "border-gold bg-gold text-white"
                             : "border-line hover:border-gold"
@@ -424,7 +424,7 @@ export default function BookingPage() {
                   {t.booking.step4}
                 </p>
                 <form
-                  className="grid grid-cols-2 gap-x-2.5 gap-y-2"
+                  className="grid grid-cols-1 gap-x-2.5 gap-y-2.5 sm:grid-cols-2"
                   onSubmit={form.handleSubmit(onSubmit, onInvalid)}
                   noValidate
                 >

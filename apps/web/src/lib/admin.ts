@@ -120,6 +120,11 @@ export async function updateAppointment(
   return data as Appointment;
 }
 
+export async function deleteAppointment(id: string) {
+  const { error } = await supabase.from("appointments").delete().eq("id", id);
+  if (error) throw error;
+}
+
 export async function fetchClients() {
   const { data, error } = await supabase
     .from("clients")

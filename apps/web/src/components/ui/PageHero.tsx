@@ -19,7 +19,7 @@ export function PageHero({
     <section
       className={`relative flex items-center justify-center overflow-hidden ${
         compact
-          ? "min-h-[14vh] md:min-h-[16vh]"
+          ? "min-h-[12vh] sm:min-h-[14vh] md:min-h-[16vh]"
           : "min-h-[42vh] md:min-h-[48vh]"
       }`}
     >
@@ -27,7 +27,7 @@ export function PageHero({
         src={image}
         alt=""
         loading="eager"
-        className="absolute inset-0 h-full w-full object-cover grayscale will-change-transform motion-reduce:transform-none"
+        className="absolute inset-0 h-full w-full object-cover object-[center_35%] grayscale will-change-transform motion-reduce:transform-none sm:object-center"
         initial={{ scale: 1.08 }}
         animate={{
           scale: [1.08, 1.14, 1.08],
@@ -61,8 +61,8 @@ export function PageHero({
           transition={{ delay: 0.1 }}
           className={`font-sans font-bold tracking-[0.12em] text-white uppercase ${
             compact
-              ? "text-2xl md:text-3xl"
-              : "text-4xl md:text-5xl"
+              ? "text-xl sm:text-2xl md:text-3xl"
+              : "text-3xl sm:text-4xl md:text-5xl"
           }`}
         >
           {title}

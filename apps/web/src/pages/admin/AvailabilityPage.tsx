@@ -98,18 +98,18 @@ export default function AvailabilityPage() {
   });
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
+    <div className="mx-auto max-w-4xl space-y-5 sm:space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-wide uppercase">
+        <h1 className="text-xl font-bold tracking-wide uppercase sm:text-2xl">
           Disponibilités
         </h1>
-        <p className="mt-1 text-sm text-muted">
-          Horaires de travail, créneaux bloqués et durées de consultation.
+        <p className="mt-0.5 text-xs text-muted sm:text-sm">
+          Horaires, créneaux bloqués et durées.
         </p>
       </div>
 
-      <section className="border border-line bg-white p-5">
-        <h2 className="text-sm font-semibold tracking-wide uppercase">
+      <section className="border border-line bg-white p-3 sm:p-5">
+        <h2 className="text-xs font-semibold tracking-wide uppercase sm:text-sm">
           Durées des consultations
         </h2>
         <p className="mt-1 text-xs text-muted">
@@ -136,19 +136,19 @@ export default function AvailabilityPage() {
         </form>
       </section>
 
-      <section className="border border-line bg-white p-5">
-        <h2 className="text-sm font-semibold tracking-wide uppercase">
+      <section className="border border-line bg-white p-3 sm:p-5">
+        <h2 className="text-xs font-semibold tracking-wide uppercase sm:text-sm">
           Horaires de travail
         </h2>
         <form
-          className="mt-4 flex flex-wrap gap-3"
+          className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:flex sm:flex-wrap sm:gap-3"
           onSubmit={(e) => {
             e.preventDefault();
             createWindow.mutate();
           }}
         >
           <select
-            className="border border-line px-3 py-2"
+            className="col-span-2 border border-line px-3 py-2 sm:col-span-1"
             value={windowForm.day_of_week}
             onChange={(e) =>
               setWindowForm((f) => ({
@@ -179,33 +179,35 @@ export default function AvailabilityPage() {
               setWindowForm((f) => ({ ...f, end_time: e.target.value }))
             }
           />
-          <Button type="submit">Ajouter</Button>
+          <Button type="submit" className="col-span-2 sm:col-span-1">
+            Ajouter
+          </Button>
         </form>
-        <ul className="mt-4 space-y-2">
+        <ul className="mt-3 space-y-1.5 sm:mt-4 sm:space-y-2">
           {(windowsQuery.data ?? []).map((w) => (
             <li
               key={w.id}
-              className="flex items-center justify-between border border-line px-3 py-2 text-sm"
+              className="flex items-center justify-between gap-2 border border-line px-2.5 py-2 text-xs sm:px-3 sm:text-sm"
             >
-              <span>
+              <span className="min-w-0 truncate">
                 {days[w.day_of_week]} {String(w.start_time).slice(0, 5)} –{" "}
                 {String(w.end_time).slice(0, 5)}
                 {!w.is_active ? " (inactif)" : ""}
               </span>
               <button
                 type="button"
-                className="text-xs text-red-600 uppercase"
+                className="shrink-0 text-[10px] font-semibold tracking-wide text-red-600 uppercase sm:text-xs"
                 onClick={() => deleteWindow.mutate(w.id)}
               >
-                Supprimer
+                Suppr.
               </button>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="border border-line bg-white p-5">
-        <h2 className="text-sm font-semibold tracking-wide uppercase">
+      <section className="border border-line bg-white p-3 sm:p-5">
+        <h2 className="text-xs font-semibold tracking-wide uppercase sm:text-sm">
           Bloquer des créneaux
         </h2>
         <form
@@ -268,13 +270,13 @@ export default function AvailabilityPage() {
           />
           <Button type="submit">Bloquer</Button>
         </form>
-        <ul className="mt-4 space-y-2">
+        <ul className="mt-3 space-y-1.5 sm:mt-4 sm:space-y-2">
           {(blockedQuery.data ?? []).map((b) => (
             <li
               key={b.id}
-              className="flex items-center justify-between border border-line px-3 py-2 text-sm"
+              className="flex items-center justify-between gap-2 border border-line px-2.5 py-2 text-xs sm:px-3 sm:text-sm"
             >
-              <span>
+              <span className="min-w-0 truncate">
                 {new Date(b.date + "T12:00:00").toLocaleDateString("fr-FR")}
                 {b.start_time && b.end_time
                   ? ` · ${String(b.start_time).slice(0, 5)}–${String(b.end_time).slice(0, 5)}`
@@ -283,10 +285,10 @@ export default function AvailabilityPage() {
               </span>
               <button
                 type="button"
-                className="text-xs text-red-600 uppercase"
+                className="shrink-0 text-[10px] font-semibold tracking-wide text-red-600 uppercase sm:text-xs"
                 onClick={() => deleteBlocked.mutate(b.id)}
               >
-                Supprimer
+                Suppr.
               </button>
             </li>
           ))}

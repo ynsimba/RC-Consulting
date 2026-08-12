@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { PRACTICE_AREAS } from "@rc/shared";
 import { Logo } from "./Logo";
@@ -8,6 +8,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 
 export function Header() {
   const { t } = useLanguage();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [dropdown, setDropdown] = useState(false);
 
@@ -26,10 +27,24 @@ export function Header() {
     { to: "/contact", label: t.nav.contact },
   ];
 
+  useEffect(() => {
+    setOpen(false);
+    setDropdown(false);
+  }, [location.pathname, location.hash]);
+
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
   return (
     <header className="sticky top-0 z-50 border-b border-line/80 bg-[#faf7f1]/95 shadow-[0_4px_20px_rgba(61,43,31,0.06)] backdrop-blur">
-      <div className="container-rc grid grid-cols-[1fr_auto] items-center gap-4 py-2 xl:grid-cols-[1fr_auto_1fr] xl:py-2.5">
-        <div className="justify-self-start">
+      <div className="container-rc grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-1.5 sm:gap-4 sm:py-2 xl:grid-cols-[1fr_auto_1fr] xl:py-2.5">
+        <div className="min-w-0 justify-self-start">
           <Logo size="nav" />
         </div>
 
@@ -103,17 +118,17 @@ export function Header() {
           </NavLink>
         </div>
 
-        <div className="flex items-center justify-self-end gap-2 xl:hidden">
+        <div className="flex items-center justify-self-end gap-1.5 sm:gap-2 xl:hidden">
           <LanguageSwitcher />
           <NavLink
             to="/rendez-vous"
-            className="btn-gold !px-4 !py-2 text-[10px] tracking-[0.14em]"
+            className="btn-gold !px-2.5 !py-1.5 text-[10px] tracking-[0.12em] sm:!px-4 sm:!py-2"
           >
             {t.nav.bookingShort}
           </NavLink>
           <button
             type="button"
-            className="grid h-10 w-10 place-items-center border border-line"
+            className="grid h-9 w-9 place-items-center border border-line sm:h-10 sm:w-10"
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
@@ -142,17 +157,17 @@ export function Header() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-line bg-[#faf7f1] xl:hidden"
+            className="max-h-[min(80vh,32rem)] overflow-y-auto border-t border-line bg-[#faf7f1] safe-pb xl:hidden"
             aria-label="Navigation mobile"
           >
-            <div className="container-rc flex flex-col items-center py-4 text-center">
+            <div className="container-rc flex flex-col py-3 text-left sm:items-center sm:py-4 sm:text-center">
               {links.map((link) => (
-                <div key={link.to} className="w-full">
+                <div key={link.to} className="w-full border-b border-line/60 last:border-0">
                   <NavLink
                     to={link.to}
                     end={link.end}
                     onClick={() => setOpen(false)}
-                    className="block py-3 text-sm font-semibold tracking-[0.14em] text-ink uppercase hover:text-gold"
+                    className="block py-3.5 text-sm font-semibold tracking-[0.14em] text-ink uppercase hover:text-gold"
                   >
                     {link.label}
                   </NavLink>
@@ -161,7 +176,7 @@ export function Header() {
                       key={child.to}
                       to={child.to}
                       onClick={() => setOpen(false)}
-                      className="block py-2 text-sm text-muted hover:text-gold"
+                      className="block py-2.5 pl-3 text-sm text-muted hover:text-gold sm:pl-0"
                     >
                       {child.label}
                     </NavLink>
@@ -171,7 +186,7 @@ export function Header() {
               <NavLink
                 to="/rendez-vous"
                 onClick={() => setOpen(false)}
-                className="btn-gold mt-4 w-full max-w-xs text-center"
+                className="btn-gold mt-4 w-full text-center sm:max-w-xs"
               >
                 {t.nav.bookingLong}
               </NavLink>

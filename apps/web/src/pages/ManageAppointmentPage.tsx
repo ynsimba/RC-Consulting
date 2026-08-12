@@ -44,7 +44,13 @@ export default function ManageAppointmentPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["manage", token] }),
   });
 
-  if (isLoading) return <div className="container-rc py-24">Chargement…</div>;
+  if (isLoading) {
+    return (
+      <div className="container-rc pt-16 pb-24 text-sm tracking-wide text-muted uppercase">
+        Chargement…
+      </div>
+    );
+  }
   if (isError || !data) {
     return <div className="container-rc py-24">Rendez-vous introuvable.</div>;
   }

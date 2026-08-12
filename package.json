@@ -12,6 +12,8 @@
     "build": "npm run build -w @rc/shared && npm run build -w @rc/api && npm run build -w @rc/web",
     "build:web": "npm run build -w @rc/web",
     "build:hostinger": "npm run build -w @rc/shared && npm run build -w @rc/web && node scripts/prepare-hostinger.mjs",
+    "email:preview": "node scripts/send-test-appointment-emails.mjs",
+    "email:test": "node scripts/send-test-appointment-emails.mjs --send",
     "db:generate": "npm run db:generate -w @rc/api",
     "db:migrate": "npm run db:migrate -w @rc/api",
     "db:seed": "npm run db:seed -w @rc/api",

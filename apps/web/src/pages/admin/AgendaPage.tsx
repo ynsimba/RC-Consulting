@@ -4,8 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchAppointments,
   fetchTodayAppointments,
-  updateAppointment,
+  deleteAppointment,
 } from "@/lib/admin";
+import {
+  confirmAppointmentWithEmail,
+  refuseAppointmentWithEmail,
+} from "@/lib/emails/adminActions";
 import type { Appointment, AppointmentStatus } from "@/types/database";
 
 function ymd(d: Date) {
@@ -69,19 +73,46 @@ export default function AgendaPage() {
   }, [monthQuery.data]);
 
   const mutation = useMutation({
-    mutationFn: ({
-      id,
+    mutationFn: async ({
+      appointment,
       status,
     }: {
-      id: string;
+      appointment: Appointment;
       status: AppointmentStatus;
-    }) => updateAppointment(id, { status }),
+    }) => {
+      if (status === "confirmed") {
+        return confirmAppointmentWithEmail(appointment);
+      }
+      if (status === "refused") {
+        const reason =
+          window.prompt("Motif du refus (optionnel) :") ?? undefined;
+        return refuseAppointmentWithEmail(appointment, reason || undefined);
+      }
+      throw new Error("Action non supportée");
+    },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["admin-today"] });
       void qc.invalidateQueries({ queryKey: ["admin-month"] });
       void qc.invalidateQueries({ queryKey: ["admin-appointments"] });
+      void qc.invalidateQueries({ queryKey: ["admin-stats"] });
     },
   });
+
+  const remove = useMutation({
+    mutationFn: (id: string) => deleteAppointment(id),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["admin-today"] });
+      void qc.invalidateQueries({ queryKey: ["admin-month"] });
+      void qc.invalidateQueries({ queryKey: ["admin-appointments"] });
+      void qc.invalidateQueries({ queryKey: ["admin-stats"] });
+    },
+  });
+
+  function confirmDelete(id: string) {
+    if (confirm("Supprimer définitivement ce rendez-vous ?")) {
+      remove.mutate(id);
+    }
+  }
 
   function shiftMonth(delta: number) {
     const d = new Date(viewYear, viewMonth + delta, 1);
@@ -125,7 +156,8 @@ export default function AgendaPage() {
             <AgendaRow
               key={a.id}
               appointment={a}
-              onStatus={(status) => mutation.mutate({ id: a.id, status })}
+              onStatus={(status) => mutation.mutate({ appointment: a, status })}
+              onDelete={() => confirmDelete(a.id)}
             />
           ))}
           {(todayQuery.data ?? []).length === 0 && (
@@ -207,7 +239,8 @@ export default function AgendaPage() {
               <AgendaRow
                 key={a.id}
                 appointment={a}
-                onStatus={(status) => mutation.mutate({ id: a.id, status })}
+                onStatus={(status) => mutation.mutate({ appointment: a, status })}
+                onDelete={() => confirmDelete(a.id)}
               />
             ))}
             {dayList.length === 0 && (
@@ -225,9 +258,11 @@ export default function AgendaPage() {
 function AgendaRow({
   appointment: a,
   onStatus,
+  onDelete,
 }: {
   appointment: Appointment;
   onStatus: (s: AppointmentStatus) => void;
+  onDelete: () => void;
 }) {
   return (
     <li className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -267,21 +302,19 @@ function AgendaRow({
             </button>
           </>
         )}
-        {["pending", "confirmed"].includes(a.status) && (
-          <button
-            type="button"
-            className="border border-line px-2.5 py-1.5 text-[11px] font-semibold text-red-700 uppercase"
-            onClick={() => onStatus("cancelled")}
-          >
-            Annuler
-          </button>
-        )}
         <Link
           to="/admin/rendez-vous"
           className="border border-line px-2.5 py-1.5 text-[11px] font-semibold uppercase hover:border-gold"
         >
           Modifier
         </Link>
+        <button
+          type="button"
+          className="border border-line px-2.5 py-1.5 text-[11px] font-semibold text-red-700 uppercase"
+          onClick={onDelete}
+        >
+          Supprimer
+        </button>
       </div>
     </li>
   );

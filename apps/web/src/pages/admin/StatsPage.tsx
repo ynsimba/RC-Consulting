@@ -18,37 +18,48 @@ export default function StatsPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold tracking-wide uppercase">Statistiques</h1>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="mx-auto max-w-5xl">
+      <h1 className="text-xl font-bold tracking-wide uppercase sm:text-2xl">
+        Statistiques
+      </h1>
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-5 sm:grid-cols-3 sm:gap-3">
         {[
           ["Total RDV", data?.appointmentsTotal],
           ["RDV ce mois", data?.appointmentsMonth],
           ["À venir", data?.upcoming],
           ["Clients", data?.clientsTotal],
-          ["Messages non lus", data?.messagesUnread],
+          ["Messages", data?.messagesUnread],
           ["Articles", data?.articlesPublished],
         ].map(([label, value]) => (
-          <div key={String(label)} className="border border-line bg-white p-6">
-            <p className="text-xs tracking-wide text-muted uppercase">{label}</p>
-            <p className="mt-2 font-serif text-4xl text-gold">{value ?? "—"}</p>
+          <div
+            key={String(label)}
+            className="border border-line bg-white px-3 py-2.5 sm:p-4"
+          >
+            <p className="text-[9px] tracking-[0.14em] text-muted uppercase sm:text-[10px]">
+              {label}
+            </p>
+            <p className="mt-1 font-serif text-2xl text-gold sm:mt-1.5 sm:text-3xl">
+              {value ?? "—"}
+            </p>
           </div>
         ))}
       </div>
-      <div className="mt-8 border border-line bg-white p-6">
-        <h2 className="font-semibold tracking-wide uppercase">Par statut</h2>
-        <ul className="mt-4 space-y-2 text-sm">
+      <div className="mt-3 border border-line bg-white p-3 sm:mt-5 sm:p-5">
+        <h2 className="text-xs font-semibold tracking-wide uppercase sm:text-sm">
+          Par statut
+        </h2>
+        <ul className="mt-2 space-y-0 sm:mt-3">
           {Object.entries(byStatus).map(([status, count]) => (
             <li
               key={status}
-              className="flex justify-between border-b border-line py-2"
+              className="flex justify-between border-b border-line py-2 text-xs sm:text-sm"
             >
               <span>{status}</span>
               <span className="font-semibold text-gold">{count}</span>
             </li>
           ))}
           {Object.keys(byStatus).length === 0 && (
-            <li className="text-muted">Aucune donnée.</li>
+            <li className="py-2 text-sm text-muted">Aucune donnée.</li>
           )}
         </ul>
       </div>
