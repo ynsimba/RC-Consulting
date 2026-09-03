@@ -5,6 +5,8 @@ type Props = {
   subtitle?: string;
   image?: string;
   compact?: boolean;
+  /** Affiche « RC Consulting » au-dessus du titre (défaut: true). */
+  showBrand?: boolean;
 };
 
 const DEFAULT = "/bc.png";
@@ -14,6 +16,7 @@ export function PageHero({
   subtitle,
   image = DEFAULT,
   compact = false,
+  showBrand = true,
 }: Props) {
   return (
     <section
@@ -46,7 +49,7 @@ export function PageHero({
           compact ? "py-5 md:py-6" : "py-20"
         }`}
       >
-        {!compact && (
+        {!compact && showBrand && (
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}

@@ -45,12 +45,12 @@ supabase functions deploy send-appointment-email
 
 supabase secrets set \
   RESEND_API_KEY=re_xxxxxxxx \
-  EMAIL_FROM="RC Consulting <noreply@votredomaine.com>" \
-  EMAIL_REPLY_TO=rc.consulting.pro@gmail.com \
+  EMAIL_FROM="RC Consulting <noreply@rc-consulting-legal.com>" \
+  EMAIL_REPLY_TO=contact@rc-consulting-legal.com \
   ADMIN_NOTIFY_EMAIL=contact@rc-consulting-legal.com,charlotte.richard@rc-consulting-legal.com
 ```
 
-- `EMAIL_FROM` : adresse **noreply** vérifiée chez Resend (domaine ou `onboarding@resend.dev` en test).
+- `EMAIL_FROM` : adresse **noreply** sur le domaine vérifié chez Resend (`rc-consulting-legal.com`).
 - `EMAIL_REPLY_TO` : boîte réelle du cabinet (utile pour l’email de modification).
 - `ADMIN_NOTIFY_EMAIL` : une ou plusieurs adresses (séparées par des virgules) notifiées à **chaque nouvelle demande** de RDV.
   Défaut : `contact@rc-consulting-legal.com` et `charlotte.richard@rc-consulting-legal.com`.

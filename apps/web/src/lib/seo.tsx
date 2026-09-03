@@ -13,7 +13,9 @@ type SeoProps = {
   referrer?: "no-referrer" | "strict-origin-when-cross-origin";
 };
 
-const SITE = "https://rcconsulting.be";
+const SITE = (
+  import.meta.env.VITE_SITE_URL ?? "https://rc-consulting-legal.com"
+).replace(/\/$/, "");
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=1200&q=80";
 
@@ -67,7 +69,7 @@ export const legalServiceJsonLd = {
     "Cabinet de conseil juridique en droit belge et en droit OHADA, actif en Belgique et en République démocratique du Congo. Médiation, arbitrage et accompagnement institutionnel.",
   url: SITE,
   telephone: "+32476950655",
-  email: "rc.consulting.pro@gmail.com",
+  email: "contact@rc-consulting-legal.com",
   areaServed: [
     { "@type": "Country", name: "Belgium" },
     { "@type": "Country", name: "Democratic Republic of the Congo" },

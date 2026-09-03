@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/ContactIcons";
 import { useLanguage } from "@/i18n/LanguageContext";
 
-const CONTACT_EMAIL = "rc.consulting.pro@gmail.com";
+const CONTACT_EMAIL = "contact@rc-consulting-legal.com";
 const WHATSAPP_URL = "https://wa.me/32476950655";
 
 async function sendContactMessage(data: ContactMessageInput) {

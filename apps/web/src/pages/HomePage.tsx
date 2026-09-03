@@ -5,7 +5,6 @@ import { WhyUs } from "@/components/home/WhyUs";
 import { Values } from "@/components/home/Values";
 import { PracticeAreas } from "@/components/home/PracticeAreas";
 import { Method } from "@/components/home/Method";
-import { Testimonials } from "@/components/home/Testimonials";
 import { FaqPreview } from "@/components/home/FaqPreview";
 import { CtaBanner } from "@/components/home/CtaBanner";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -31,7 +30,6 @@ export default function HomePage() {
       <Values />
       <PracticeAreas />
       <Method />
-      <Testimonials />
       <FaqPreview />
       <CtaBanner />
     </>

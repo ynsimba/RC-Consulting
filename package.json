@@ -6,9 +6,10 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently -n api,web -c gold,cyan \"npm run dev -w @rc/api\" \"npm run dev -w @rc/web\"",
+    "dev": "npm run dev -w @rc/web",
     "dev:web": "npm run dev -w @rc/web",
     "dev:api": "npm run dev -w @rc/api",
+    "dev:all": "concurrently -n api,web -c gold,cyan \"npm run dev -w @rc/api\" \"npm run dev -w @rc/web\"",
     "build": "npm run build -w @rc/shared && npm run build -w @rc/api && npm run build -w @rc/web",
     "build:web": "npm run build -w @rc/web",
     "build:hostinger": "npm run build -w @rc/shared && npm run build -w @rc/web && node scripts/prepare-hostinger.mjs",
@@ -17,9 +18,7 @@
     "db:generate": "npm run db:generate -w @rc/api",
     "db:migrate": "npm run db:migrate -w @rc/api",
     "db:seed": "npm run db:seed -w @rc/api",
-    "db:push": "npm run db:push -w @rc/api",
-    "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down"
+    "db:push": "npm run db:push -w @rc/api"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

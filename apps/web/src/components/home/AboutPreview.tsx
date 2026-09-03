@@ -17,13 +17,14 @@ export function AboutPreview() {
               className="h-[480px] w-full object-cover grayscale"
               loading="lazy"
             />
-            <div className="absolute -bottom-6 -right-2 hidden bg-gold px-8 py-6 text-white md:block">
-              <p className="font-serif text-2xl font-bold leading-tight">
-                BE
-                <br />
-                RDC
+            <div className="absolute -bottom-6 -right-2 hidden max-w-[14rem] bg-gold px-6 py-5 text-white md:block">
+              <p className="text-sm font-bold leading-snug tracking-wide uppercase">
+                {t.home.dualBelgium}
               </p>
-              <p className="mt-1 text-xs tracking-[0.2em] uppercase">
+              <p className="mt-1 text-sm font-bold leading-snug tracking-wide uppercase">
+                {t.home.dualDrc}
+              </p>
+              <p className="mt-2 text-[10px] tracking-[0.18em] uppercase opacity-90">
                 {t.home.dualAnchor}
               </p>
             </div>
@@ -38,6 +39,8 @@ export function AboutPreview() {
           />
           <p className="leading-relaxed text-muted">{t.home.aboutP1}</p>
           <p className="mt-4 leading-relaxed text-muted">{t.home.aboutP2}</p>
+          <p className="mt-4 leading-relaxed text-muted">{t.home.aboutP3}</p>
+          <p className="mt-4 leading-relaxed text-muted">{t.home.aboutP4}</p>
           <ul className="mt-6 space-y-3 text-sm text-ink">
             {[t.home.aboutBullet1, t.home.aboutBullet2, t.home.aboutBullet3].map(
               (item) => (

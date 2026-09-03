@@ -21,6 +21,9 @@ export function Footer() {
           <p className="mt-4 text-sm leading-relaxed text-white/70 md:mt-5 md:max-w-sm">
             {t.footer.blurb}
           </p>
+          <p className="mt-2 text-sm leading-relaxed text-white/70 md:max-w-sm">
+            {t.footer.belgium} - {t.footer.drc}
+          </p>
         </div>
 
         {/* Links + contact */}
@@ -86,10 +89,10 @@ export function Footer() {
               <li className="flex items-start gap-3">
                 <IconMail className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
                 <a
-                  href="mailto:rc.consulting.pro@gmail.com"
+                  href="mailto:contact@rc-consulting-legal.com"
                   className="break-words hover:text-gold"
                 >
-                  rc.consulting.pro@gmail.com
+                  contact@rc-consulting-legal.com
                 </a>
               </li>
               <li className="flex items-start gap-3">

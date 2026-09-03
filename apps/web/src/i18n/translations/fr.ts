@@ -27,17 +27,17 @@ export const fr = {
     slides: [
       {
         eyebrow: "Belgique · République démocratique du Congo",
-        title1: "Droit belge & OHADA.",
+        title1: "Droit belge & OHADA",
         title2: "Une expertise transversale.",
         subtitle:
           "Conseil juridique, médiation, arbitrage et accompagnement des entreprises, investisseurs et institutions entre la Belgique et la RDC.",
       },
       {
         eyebrow: "Médiation · Arbitrage · Négociation",
-        title1: "Résoudre les litiges.",
+        title1: "Prévenir et résoudre les litiges,",
         title2: "Préserver vos intérêts.",
         subtitle:
-          "Nous privilégions des solutions efficaces, confidentielles et durables pour protéger vos droits et vos relations d'affaires.",
+          "Nous privilégions des solutions efficaces, confidentielles et négociées pour protéger vos droits et vos relations d'affaires.",
       },
       {
         eyebrow: "Confiance · Rigueur · Discrétion",
@@ -53,30 +53,36 @@ export const fr = {
     aboutTitle: "Présentation du cabinet",
     aboutSubtitle: "Fondé en 2024 par Me Charlotte Richard.",
     aboutP1:
-      "Forte de 15 ans d'expérience en négociation politique et conseil juridique auprès de ministres belges, Me Charlotte Richard a créé RC Consulting pour offrir un conseil exigeant en droit belge et en droit OHADA, entre la Belgique et la République démocratique du Congo.",
+      "Forte d'une expérience de 15 ans en tant que négociateur politique et conseiller juridique pour plusieurs ministres belges, Charlotte Richard a créé en 2024 le cabinet de conseil RC Consulting.",
     aboutP2:
-      "Médiatrice et Arbitre, membre de CEPANI et de la Chambre de commerce belgo-congolaise, elle accompagne entrepreneurs, investisseurs et autorités publiques dans la prévention et le règlement alternatif des différends.",
+      "Avocate au barreau de Bruxelles, titulaire d'un Master en droit OHADA, elle est également Médiatrice et Arbitre, membre du CEPANI.",
+    aboutP3:
+      "Active entre la Belgique et la République démocratique du Congo, elle est membre de la Chambre de commerce belgo-congolaise.",
+    aboutP4:
+      "Me Charlotte Richard officie également comme consultante et propose un accompagnement global et personnalisé des entrepreneurs et investisseurs actifs entre la Belgique et la République démocratique du Congo.",
     aboutBullet1: "Master en droit belge & droit OHADA",
     aboutBullet2: "Médiateur et Arbitre — CEPANI",
-    aboutBullet3: "Chambre de commerce belgo-congolaise",
+    aboutBullet3: "Membre de la Chambre de commerce belgo-congolaise",
     aboutCta: "À propos de Me Charlotte Richard",
     dualAnchor: "Double ancrage",
+    dualBelgium: "Belgique",
+    dualDrc: "République démocratique du Congo",
     whyEyebrow: "Différence",
     whyTitle: "Pourquoi choisir notre cabinet",
     whySubtitle:
       "Une position unique entre la Belgique et la République démocratique du Congo.",
     why1Title: "Double expertise juridique",
     why1Text:
-      "Maîtrise croisée du droit belge et du droit OHADA pour sécuriser vos opérations entre l'Europe et l'Afrique.",
+      "Une expertise juridique en droit belge pour vos dossiers et litiges civils ou commerciaux. Maîtrise croisée du droit belge et du droit OHADA pour sécuriser vos opérations entre l'Europe et l'Afrique.",
     why2Title: "Modes alternatifs de règlement",
     why2Text:
-      "Médiation et arbitrage pour prévenir et résoudre les différends civils ou commerciaux efficacement.",
+      "Médiation et arbitrage pour prévenir et résoudre les différends civils ou commerciaux efficacement, en Belgique et en Afrique.",
     why3Title: "Pont Belgique–RDC",
     why3Text:
-      "Un accompagnement institutionnel dédié aux entrepreneurs, investisseurs et projets bilatéraux.",
+      "Un accompagnement institutionnel dédié aux entrepreneurs et investisseurs dans leurs projets bilatéraux.",
     why4Title: "Conseil public & privé",
     why4Text:
-      "Intervention auprès des acteurs privés comme des autorités publiques sur des projets transversaux.",
+      "Intervention auprès des acteurs privés et des autorités publiques sur des projets transversaux.",
     valuesEyebrow: "Engagements",
     valuesTitle: "Nos valeurs",
     valuesSubtitle:
@@ -104,19 +110,16 @@ export const fr = {
     methodEyebrow: "Méthode",
     methodTitle: "Notre processus d'accompagnement",
     methodSubtitle:
-      "Une méthode structurée pour sécuriser vos décisions entre la Belgique et la RDC.",
+      "Une méthode structurée pour sécuriser vos activités en Belgique et en RDC.",
     step1Title: "Premier échange",
     step1Text:
-      "Compréhension de votre projet ou différend, entre enjeux belges, OHADA ou bilatéraux Belgique–RDC.",
+      "Prise de contact — Compréhension de votre projet ou différend et analyse des enjeux",
     step2Title: "Diagnostic juridique",
     step2Text:
-      "Analyse au regard du droit belge et/ou du droit OHADA, avec identification des risques et leviers.",
-    step3Title: "Stratégie adaptée",
+      "Analyse du dossier au regard des normes applicables — Pistes de solutions et d'actions",
+    step3Title: "Action & suivi",
     step3Text:
-      "Conseil, négociation, médiation, arbitrage ou accompagnement institutionnel selon le besoin.",
-    step4Title: "Action & suivi",
-    step4Text:
-      "Mise en œuvre, coordination des parties prenantes et suivi jusqu'à la sécurisation du résultat.",
+      "Mise en œuvre, coordination des parties prenantes et suivi jusqu'à la sécurisation du résultat",
     testimonialsEyebrow: "Confiance",
     testimonialsTitle: "Témoignages",
     testimonialsSubtitle: "Ce que disent ceux que nous accompagnons.",
@@ -124,16 +127,16 @@ export const fr = {
     faqTitle: "Questions fréquentes",
     faqSubtitle: "Les réponses aux interrogations les plus courantes.",
     faqCta: "Voir toute la FAQ",
-    ctaEyebrow: "Belgique · RDC",
+    ctaEyebrow: "Échangeons",
     ctaTitle: "Échangeons sur votre projet",
     ctaText:
-      "Conseil en droit belge ou OHADA, médiation, arbitrage ou accompagnement institutionnel : réservez une consultation.",
-    ctaButton: "Prendre rendez-vous",
+      "Conseil juridique en droit belge et droit OHADA. Médiation — Arbitrage — Consultance.",
+    ctaButton: "Réservez une consultation",
     loading: "Chargement…",
   },
   footer: {
     blurb:
-      "Cabinet de conseil juridique en droit belge et en droit OHADA. Activités en Belgique et en République démocratique du Congo — médiation, arbitrage et accompagnement institutionnel.",
+      "Cabinet de conseil juridique en droit belge et en droit OHADA – Médiation – Arbitrage – Consultance et accompagnement institutionnel",
     navigation: "Navigation",
     expertise: "Expertises",
     contact: "Contact",
@@ -159,7 +162,7 @@ export const fr = {
     phone: "Téléphone",
     phoneValue: "+32 476 95 06 55",
     email: "E-mail",
-    emailValue: "rc.consulting.pro@gmail.com",
+    emailValue: "contact@rc-consulting-legal.com",
     whatsapp: "WhatsApp",
     whatsappValue: "+32 476 95 06 55",
     whatsappCta: "Contacter par WhatsApp",
@@ -179,39 +182,26 @@ export const fr = {
   about: {
     seoTitle: "À propos — Me Charlotte Richard",
     seoDesc:
-      "Me Charlotte Richard, fondatrice de RC Consulting. 15 ans d'expérience en négociation politique et conseil juridique. Droit belge, OHADA, médiateur et arbitre CEPANI.",
+      "Me Charlotte Richard, fondatrice de RC Consulting. Avocate, médiatrice, arbitre et consultante. Droit belge, OHADA, CEPANI.",
     heroTitle: "À propos",
-    heroSubtitle: "RC Consulting — fondé par Me Charlotte Richard.",
     founderEyebrow: "La fondatrice",
     founderTitle: "Me Charlotte Richard",
-    founderSubtitle:
-      "Négociatrice politique · Conseillère juridique · Médiatrice & Arbitre",
+    founderSubtitle: "Avocate-Médiatrice-Arbitre-Consultante",
     founderLabel: "Fondatrice",
     p1: "Forte d'une expérience de 15 ans en tant que négociateur politique et conseiller juridique pour plusieurs ministres belges, Charlotte Richard a créé en 2024 le cabinet de conseil RC Consulting.",
-    p2: "Titulaire d'un Master en droit belge et en droit OHADA, elle est également Médiatrice et Arbitre, membre de CEPANI.",
+    p2: "Avocate au barreau de Bruxelles, titulaire d'un Master en droit OHADA, elle est également Médiatrice et Arbitre, membre du CEPANI.",
     p3: "Active entre la Belgique et la République démocratique du Congo, elle est membre de la Chambre de commerce belgo-congolaise.",
-    bullet1: "15 ans auprès de ministres belges",
-    bullet2: "Master en droit belge & droit OHADA",
-    bullet3: "Médiateur et Arbitre — membre CEPANI",
-    bullet4: "Chambre de commerce belgo-congolaise",
+    p4: "Me Charlotte Richard officie également comme consultante et propose un accompagnement global et personnalisé des entrepreneurs et investisseurs actifs entre la Belgique et la République démocratique du Congo.",
     firmEyebrow: "Le cabinet",
     firmTitle: "RC Consulting",
     firmSubtitle:
-      "Créé en 2024 pour un conseil juridique exigeant entre la Belgique et la RDC.",
+      "Créé en 2024 pour un accompagnement stratégique entre la Belgique et la République démocratique du Congo.",
     firmP1:
       "RC Consulting est un cabinet de conseil juridique en droit belge et en droit OHADA exerçant ses activités en Belgique et en République démocratique du Congo.",
     firmP2:
       "Le cabinet est actif dans la médiation et l'arbitrage pour la prévention et le règlement alternatif des différends civils ou commerciaux. Il propose également une assistance à la négociation d'accords et de contrats, ainsi qu'un accompagnement institutionnel des entrepreneurs et investisseurs entre la Belgique et la RDC.",
     firmP3:
       "RC Consulting conseille aussi les autorités publiques en Belgique et en RDC pour la coordination de projets transversaux et la promotion des modes alternatifs de règlement des différends.",
-    cardBe: "Belgique",
-    cardBeText: "Conseil en droit belge et appui institutionnel.",
-    cardRdc: "RDC",
-    cardRdcText: "Expertise en droit OHADA et accompagnement local.",
-    cardMed: "Médiation",
-    cardMedText: "Prévention et résolution amiable des conflits.",
-    cardArb: "Arbitrage",
-    cardArbText: "Règlement alternatif des litiges commerciaux.",
     cta: "Prendre rendez-vous",
   },
   expertise: {
@@ -220,7 +210,7 @@ export const fr = {
       "Droit belge, droit OHADA, médiation, arbitrage, négociation de contrats et accompagnement Belgique–RDC.",
     heroTitle: "Nos expertises",
     heroSubtitle:
-      "Droit belge · Droit OHADA · Médiation · Arbitrage · Accompagnement institutionnel.",
+      "Droit belge · Droit OHADA · Médiation · Arbitrage · Accompagnement institutionnel",
     eyebrow: "Domaines",
     title: "Une expertise dédiée",
     more: "En savoir plus →",
@@ -237,12 +227,12 @@ export const fr = {
     "droit-belge": {
       title: "Droit belge",
       short:
-        "Conseil et accompagnement en droit belge pour particuliers, entreprises et institutions.",
+        "Conseil et accompagnement en droit belge pour particuliers, entreprises et institutions publiques.",
     },
     "droit-ohada": {
       title: "Droit OHADA",
       short:
-        "Expertise en droit des affaires OHADA pour vos opérations en Afrique, notamment en RDC.",
+        "Expertise en droit OHADA pour vos opérations en Afrique, notamment en RDC.",
     },
     mediation: {
       title: "Médiation",
@@ -251,23 +241,12 @@ export const fr = {
     },
     arbitrage: {
       title: "Arbitrage",
-      short:
-        "Règlement alternatif des litiges commerciaux par une procédure d'arbitrage maîtrisée.",
+      short: "Règlement alternatif des litiges commerciaux par arbitrage.",
     },
-    "negociation-contrats": {
-      title: "Négociation & contrats",
+    "consultance-accompagnement": {
+      title: "Consultance & Accompagnement",
       short:
-        "Assistance à la négociation d'accords et sécurisation de vos contrats stratégiques.",
-    },
-    "accompagnement-entrepreneurs-investisseurs": {
-      title: "Entrepreneurs & investisseurs",
-      short:
-        "Accompagnement institutionnel entre la Belgique et la République démocratique du Congo.",
-    },
-    "conseil-autorites-publiques": {
-      title: "Autorités publiques",
-      short:
-        "Coordination de projets transversaux et promotion des modes alternatifs de règlement des différends.",
+        "Négociation de contrats, accompagnement institutionnel Belgique–RDC et conseil aux autorités publiques.",
     },
   },
   booking: {
@@ -318,7 +297,7 @@ export const fr = {
     heroTitle: "Mentions légales",
     editorTitle: "Éditeur",
     editorBody:
-      "RC-Consulting – Charlotte RICHARD\nSiège social : Clos des Rosacées, 4 – 1080 BRUXELLES\nEmail : rc.consulting.pro@gmail.com\nTéléphone : +32 476 95 06 55\nBCE : BE1010.359.621",
+      "RC-Consulting – Charlotte RICHARD\nSiège social : Clos des Rosacées, 4 – 1080 BRUXELLES\nEmail : contact@rc-consulting-legal.com\nTéléphone : +32 476 95 06 55\nBCE : BE1010.359.621",
     hostTitle: "Hébergement",
     hostBody:
       "Le site est hébergé par un prestataire professionnel. Les informations techniques détaillées sont disponibles sur demande.",
@@ -341,7 +320,7 @@ export const fr = {
       "Ces données sont utilisées exclusivement pour vous recontacter, organiser les consultations et assurer le suivi juridique demandé.",
     rightsTitle: "Vos droits",
     rightsBody:
-      "Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement et d'opposition. Contact : rc.consulting.pro@gmail.com",
+      "Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement et d'opposition. Contact : contact@rc-consulting-legal.com",
     retentionTitle: "Conservation",
     retentionBody:
       "Les données sont conservées pendant la durée nécessaire aux finalités poursuivies et conformément aux obligations légales applicables.",

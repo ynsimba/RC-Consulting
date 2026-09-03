@@ -8,7 +8,6 @@ export function Method() {
     { title: t.home.step1Title, text: t.home.step1Text },
     { title: t.home.step2Title, text: t.home.step2Text },
     { title: t.home.step3Title, text: t.home.step3Text },
-    { title: t.home.step4Title, text: t.home.step4Text },
   ];
 
   return (
@@ -19,7 +18,7 @@ export function Method() {
           title={t.home.methodTitle}
           subtitle={t.home.methodSubtitle}
         />
-        <div className="grid items-stretch gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid items-stretch gap-8 md:grid-cols-3">
           {steps.map((step, i) => (
             <FadeIn key={step.title} delay={i * 0.08} className="h-full">
               <div className="flex h-full flex-col border border-line p-6">

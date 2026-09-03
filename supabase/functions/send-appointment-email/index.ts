@@ -441,7 +441,7 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get("RESEND_API_KEY");
     const from =
       Deno.env.get("EMAIL_FROM") ??
-      "RC Consulting <noreply@resend.dev>";
+      "RC Consulting <noreply@rc-consulting-legal.com>";
     const adminNotifyRaw =
       Deno.env.get("ADMIN_NOTIFY_EMAIL") ??
       "contact@rc-consulting-legal.com,charlotte.richard@rc-consulting-legal.com";

@@ -12,10 +12,12 @@ export const env = {
   webUrl: required("WEB_URL", "http://localhost:5173"),
   authSecret: required("AUTH_SECRET", "dev-secret"),
   databaseUrl: required("DATABASE_URL"),
-  adminEmail: required("ADMIN_EMAIL", "admin@rcconsulting.fr"),
+  adminEmail: required("ADMIN_EMAIL", "admin@rc-consulting-legal.com"),
   adminPassword: required("ADMIN_PASSWORD", "Admin123!"),
   resendApiKey: process.env.RESEND_API_KEY ?? "",
-  emailFrom: process.env.EMAIL_FROM ?? "RC Consulting <noreply@rcconsulting.fr>",
+  emailFrom:
+    process.env.EMAIL_FROM ??
+    "RC Consulting <noreply@rc-consulting-legal.com>",
   adminNotifyEmails: (
     process.env.ADMIN_NOTIFY_EMAIL ??
     "contact@rc-consulting-legal.com,charlotte.richard@rc-consulting-legal.com"
@@ -34,7 +36,7 @@ export const env = {
   },
   contact: {
     phone: process.env.CONTACT_PHONE ?? "+32476950655",
-    email: process.env.CONTACT_EMAIL ?? "rc.consulting.pro@gmail.com",
+    email: process.env.CONTACT_EMAIL ?? "contact@rc-consulting-legal.com",
     whatsapp: process.env.CONTACT_WHATSAPP ?? "32476950655",
     address:
       process.env.CONTACT_ADDRESS ??

@@ -4,6 +4,8 @@ export type PracticeContent = {
   slug: PracticeAreaSlug;
   title: string;
   intro: string;
+  /** Points affichés sous la présentation (ex. arbitrage). */
+  highlights?: string[];
   situations: string[];
   accompaniment: string[];
   faqs: { question: string; answer: string }[];
@@ -14,19 +16,15 @@ export const practiceContents: PracticeContent[] = [
     slug: "droit-belge",
     title: "Droit belge",
     intro:
-      "RC Consulting conseille et accompagne ses clients en droit belge, en Belgique, avec une approche stratégique adaptée aux enjeux civils, commerciaux et institutionnels.",
+      "RC Consulting conseille et accompagne ses clients en droit belge, avec une approche stratégique adaptée aux enjeux civils, commerciaux et institutionnels.",
     situations: [
-      "Conseil juridique aux entreprises et particuliers",
+      "Conseil juridique aux particuliers et aux entreprises",
       "Contrats et relations commerciales",
-      "Prévention des litiges",
-      "Accompagnement de projets transversaux",
       "Interface juridique Belgique–RDC",
     ],
     accompaniment: [
       "Analyse de votre situation au regard du droit belge",
-      "Conseil stratégique et rédaction d'actes",
-      "Assistance à la négociation",
-      "Orientation vers la médiation ou l'arbitrage lorsque pertinent",
+      "Conseil juridique et rédaction d'actes",
     ],
     faqs: [
       {
@@ -40,19 +38,17 @@ export const practiceContents: PracticeContent[] = [
     slug: "droit-ohada",
     title: "Droit OHADA",
     intro:
-      "Le cabinet accompagne entrepreneurs, investisseurs et institutions dans l'application du droit OHADA, notamment pour les activités liées à la RDC.",
+      "Le cabinet accompagne entrepreneurs et investisseurs dans l'application du droit OHADA, notamment pour les activités liées à la RDC.",
     situations: [
       "Structuration d'opérations commerciales",
       "Sociétés et gouvernance",
-      "Sûretés et recouvrement",
-      "Contrats d'affaires régionaux",
-      "Contentieux et modes alternatifs de règlement",
+      "Application générale du droit OHADA",
     ],
     accompaniment: [
       "Diagnostic juridique OHADA",
-      "Sécurisation des montages et contrats",
+      "Sécurisation des opérations et contrats",
+      "Constitution de sociétés et suivi des obligations applicables",
       "Conseil aux investisseurs belges et congolais",
-      "Coordination avec les acteurs locaux",
     ],
     faqs: [
       {
@@ -66,20 +62,9 @@ export const practiceContents: PracticeContent[] = [
     slug: "mediation",
     title: "Médiation",
     intro:
-      "Nous intervenons en médiation pour prévenir et résoudre les différends civils ou commerciaux de manière confidentielle, rapide et durable.",
-    situations: [
-      "Conflits commerciaux entre partenaires",
-      "Différends civils",
-      "Tensions contractuelles",
-      "Prévention d'un contentieux judiciaire",
-      "Relations d'affaires Belgique–RDC",
-    ],
-    accompaniment: [
-      "Évaluation de l'opportunité d'une médiation",
-      "Organisation du processus",
-      "Facilitation des échanges",
-      "Formalisation des accords",
-    ],
+      "Intervention en tant que médiateur, en droit belge et en droit OHADA, pour prévenir et résoudre les différends civils ou commerciaux de manière confidentielle, rapide et durable.",
+    situations: [],
+    accompaniment: [],
     faqs: [
       {
         question: "La médiation remplace-t-elle toujours un procès ?",
@@ -92,20 +77,14 @@ export const practiceContents: PracticeContent[] = [
     slug: "arbitrage",
     title: "Arbitrage",
     intro:
-      "RC Consulting accompagne ses clients dans le recours à l'arbitrage pour le règlement alternatif des litiges commerciaux.",
-    situations: [
-      "Clauses compromissoires",
-      "Litiges commerciaux nationaux ou internationaux",
-      "Exécution de sentences arbitrales",
-      "Différends d'investissement",
-      "Contentieux OHADA ou belgo-congolais",
+      "RC Consulting accompagne ses clients dans le recours à l'arbitrage pour le règlement alternatif des litiges commerciaux selon tout règlement arbitral applicable, également en droit belge et en droit OHADA.",
+    highlights: [
+      "Rédaction de clauses compromissoires",
+      "Intervention en tant qu'arbitre",
+      "Exequatur des sentences arbitrales",
     ],
-    accompaniment: [
-      "Conseil sur la stratégie arbitrale",
-      "Rédaction et analyse de clauses",
-      "Assistance pendant la procédure",
-      "Suivi jusqu'à l'exécution",
-    ],
+    situations: [],
+    accompaniment: [],
     faqs: [
       {
         question: "Pourquoi choisir l'arbitrage ?",
@@ -115,80 +94,28 @@ export const practiceContents: PracticeContent[] = [
     ],
   },
   {
-    slug: "negociation-contrats",
-    title: "Négociation & contrats",
+    slug: "consultance-accompagnement",
+    title: "Consultance & Accompagnement",
     intro:
-      "Nous assistons à la négociation d'accords et de contrats pour sécuriser vos engagements et prévenir les litiges futurs.",
+      "Assistance à la négociation d'accords et de contrats pour sécuriser vos engagements et prévenir les litiges. Accompagnement institutionnel des entrepreneurs et investisseurs entre la Belgique et la République démocratique du Congo. Conseil des autorités publiques pour la coordination de projets transversaux et l'élaboration de politiques publiques.",
     situations: [
-      "Contrats commerciaux",
-      "Partenariats et joint-ventures",
-      "Accords d'investissement",
-      "Conventions institutionnelles",
-      "Renégociation de clauses sensibles",
+      "Contrats",
+      "Investissements",
+      "Élaboration de politiques publiques",
+      "Coordination de projets",
     ],
     accompaniment: [
-      "Préparation de la négociation",
-      "Analyse des risques juridiques",
-      "Rédaction et relecture contractuelle",
-      "Appui jusqu'à la signature",
-    ],
-    faqs: [
-      {
-        question: "Intervenez-vous avant la signature d'un contrat ?",
-        answer:
-          "Oui. Une intervention en amont permet souvent d'éviter des déséquilibres et des contentieux coûteux.",
-      },
-    ],
-  },
-  {
-    slug: "accompagnement-entrepreneurs-investisseurs",
-    title: "Entrepreneurs & investisseurs",
-    intro:
-      "Le cabinet propose un accompagnement institutionnel des entrepreneurs et investisseurs entre la Belgique et la République démocratique du Congo.",
-    situations: [
-      "Implantation ou expansion entre BE et RDC",
+      "Négociation d'accords et rédaction de contrats",
       "Sécurisation juridique des investissements",
-      "Relations avec les administrations",
-      "Partenariats commerciaux bilatéraux",
-      "Prévention des risques juridiques locaux",
-    ],
-    accompaniment: [
-      "Cartographie des enjeux juridiques",
-      "Interface institutionnelle",
-      "Conseil en droit belge et OHADA",
-      "Suivi opérationnel du projet",
+      "Relations avec les institutions",
+      "Prévention des risques juridiques",
+      "Coordination de projet et mise en place de politiques publiques",
     ],
     faqs: [
       {
-        question: "Accompagnez-vous les deux flux d'investissement ?",
+        question: "Qui peut bénéficier de cet accompagnement ?",
         answer:
-          "Oui. Nous intervenons pour les acteurs belges en RDC comme pour les acteurs congolais en Belgique.",
-      },
-    ],
-  },
-  {
-    slug: "conseil-autorites-publiques",
-    title: "Autorités publiques",
-    intro:
-      "RC Consulting conseille les autorités publiques en Belgique et en RDC pour la coordination de projets transversaux et la promotion des modes alternatifs de règlement des différends.",
-    situations: [
-      "Coordination de projets transversaux",
-      "Promotion de la médiation et de l'arbitrage",
-      "Appui à la gouvernance juridique",
-      "Partenariats institutionnels",
-      "Politiques publiques liées au règlement des différends",
-    ],
-    accompaniment: [
-      "Conseil stratégique",
-      "Appui à la conception de dispositifs",
-      "Coordination multi-acteurs",
-      "Formation et sensibilisation aux MARD",
-    ],
-    faqs: [
-      {
-        question: "Travaillez-vous avec des institutions publiques ?",
-        answer:
-          "Oui. Nous accompagnons des autorités publiques belges et congolaises sur des projets transversaux et la promotion des MARD.",
+          "Entrepreneurs, investisseurs et autorités publiques actifs entre la Belgique et la RDC, pour sécuriser contrats, projets et relations institutionnelles.",
       },
     ],
   },

@@ -17,6 +17,10 @@ export default function PracticeAreaDetailPage() {
 
   const title = t.areas[practice.slug].title;
   const short = t.areas[practice.slug].short;
+  const hasSituations = practice.situations.length > 0;
+  const hasAccompaniment = practice.accompaniment.length > 0;
+  const hasHighlights = (practice.highlights?.length ?? 0) > 0;
+  const showMethodBlock = hasSituations || hasAccompaniment;
 
   return (
     <>
@@ -43,44 +47,64 @@ export default function PracticeAreaDetailPage() {
               title={title}
               subtitle={practice.intro}
             />
+            {hasHighlights && (
+              <ul className="mt-2 space-y-3">
+                {practice.highlights!.map((s) => (
+                  <li key={s} className="flex gap-3 text-muted">
+                    <span className="text-gold">▸</span>
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            )}
           </FadeIn>
         </div>
       </section>
 
-      <section className="section-pad bg-soft">
-        <div className="container-rc grid gap-12 lg:grid-cols-2">
-          <FadeIn>
-            <SectionHeading
-              align="left"
-              eyebrow={t.expertise.situationsEyebrow}
-              title={t.expertise.situations}
-            />
-            <ul className="space-y-3">
-              {practice.situations.map((s) => (
-                <li key={s} className="flex gap-3 text-muted">
-                  <span className="text-gold">▸</span>
-                  {s}
-                </li>
-              ))}
-            </ul>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <SectionHeading
-              align="left"
-              eyebrow={t.expertise.accompanimentEyebrow}
-              title={t.expertise.accompaniment}
-            />
-            <ul className="space-y-3">
-              {practice.accompaniment.map((s) => (
-                <li key={s} className="flex gap-3 text-muted">
-                  <span className="text-gold">▸</span>
-                  {s}
-                </li>
-              ))}
-            </ul>
-          </FadeIn>
-        </div>
-      </section>
+      {showMethodBlock && (
+        <section className="section-pad bg-soft">
+          <div
+            className={`container-rc grid gap-12 ${
+              hasSituations && hasAccompaniment ? "lg:grid-cols-2" : "max-w-4xl"
+            }`}
+          >
+            {hasSituations && (
+              <FadeIn>
+                <SectionHeading
+                  align="left"
+                  eyebrow={t.expertise.situationsEyebrow}
+                  title={t.expertise.situations}
+                />
+                <ul className="space-y-3">
+                  {practice.situations.map((s) => (
+                    <li key={s} className="flex gap-3 text-muted">
+                      <span className="text-gold">▸</span>
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </FadeIn>
+            )}
+            {hasAccompaniment && (
+              <FadeIn delay={hasSituations ? 0.1 : 0}>
+                <SectionHeading
+                  align="left"
+                  eyebrow={t.expertise.accompanimentEyebrow}
+                  title={t.expertise.accompaniment}
+                />
+                <ul className="space-y-3">
+                  {practice.accompaniment.map((s) => (
+                    <li key={s} className="flex gap-3 text-muted">
+                      <span className="text-gold">▸</span>
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </FadeIn>
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="section-pad">
         <div className="container-rc max-w-3xl">

@@ -19,14 +19,14 @@ export default function AboutPage() {
           "@type": "Person",
           name: "Charlotte Richard",
           honorificPrefix: "Me",
-          jobTitle: "Legal advisor, Mediator and Arbitrator",
+          jobTitle: "Avocate, Médiatrice, Arbitre, Consultante",
           worksFor: {
             "@type": "LegalService",
             name: "RC Consulting",
           },
         }}
       />
-      <PageHero title={t.about.heroTitle} subtitle={t.about.heroSubtitle} />
+      <PageHero title={t.about.heroTitle} showBrand={false} />
 
       <section className="section-pad">
         <div className="container-rc grid items-center gap-12 lg:grid-cols-2">
@@ -58,19 +58,7 @@ export default function AboutPage() {
             <p className="leading-relaxed text-muted">{t.about.p1}</p>
             <p className="mt-4 leading-relaxed text-muted">{t.about.p2}</p>
             <p className="mt-4 leading-relaxed text-muted">{t.about.p3}</p>
-            <ul className="mt-8 space-y-3 text-sm text-ink">
-              {[
-                t.about.bullet1,
-                t.about.bullet2,
-                t.about.bullet3,
-                t.about.bullet4,
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-3">
-                  <span className="mt-1 text-gold">▸</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
+            <p className="mt-4 leading-relaxed text-muted">{t.about.p4}</p>
           </FadeIn>
         </div>
       </section>
@@ -86,23 +74,6 @@ export default function AboutPage() {
             <p>{t.about.firmP1}</p>
             <p>{t.about.firmP2}</p>
             <p>{t.about.firmP3}</p>
-          </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
-            {[
-              [t.about.cardBe, t.about.cardBeText],
-              [t.about.cardRdc, t.about.cardRdcText],
-              [t.about.cardMed, t.about.cardMedText],
-              [t.about.cardArb, t.about.cardArbText],
-            ].map(([title, text], i) => (
-              <FadeIn key={title} delay={i * 0.06}>
-                <div className="border-t-2 border-gold bg-white p-6">
-                  <h3 className="mb-2 text-sm font-bold tracking-[0.14em] uppercase">
-                    {title}
-                  </h3>
-                  <p className="text-sm text-muted">{text}</p>
-                </div>
-              </FadeIn>
-            ))}
           </div>
           <div className="mt-12 text-center">
             <Button to="/rendez-vous">{t.about.cta}</Button>
