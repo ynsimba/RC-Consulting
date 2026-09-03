@@ -30,7 +30,7 @@ export function HeroSection() {
       <motion.img
         src={HERO_IMG}
         alt="RC Consulting"
-        className="absolute inset-0 h-full w-full object-cover object-[center_30%] grayscale will-change-transform motion-reduce:transform-none sm:object-center"
+        className="absolute inset-0 h-full w-full object-cover object-[center_30%] will-change-transform motion-reduce:transform-none sm:object-center"
         initial={{ scale: 1.12, x: "0%", y: "0%" }}
         animate={{
           scale: [1.12, 1.2, 1.12],
