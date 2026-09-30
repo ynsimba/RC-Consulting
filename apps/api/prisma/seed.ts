@@ -134,10 +134,10 @@ async function main() {
       {
         question: "Dans quels pays intervenez-vous ?",
         answer:
-          "RC Consulting exerce ses activités en Belgique et en République démocratique du Congo.",
+          "RC Consulting exerce ses activités principalement en Belgique et en République démocratique du Congo.\n\nPour d'autres litiges internationaux, n'hésitez pas à nous contacter pour une solution sur mesure.",
         questionEn: "In which countries do you operate?",
         answerEn:
-          "RC Consulting operates in Belgium and in the Democratic Republic of the Congo.",
+          "RC Consulting operates primarily in Belgium and in the Democratic Republic of the Congo.\n\nFor other international disputes, please contact us for a tailored solution.",
         order: 1,
         published: true,
         category: "Général",
@@ -145,10 +145,10 @@ async function main() {
       {
         question: "Quels droits pratiquez-vous ?",
         answer:
-          "Nous intervenons en droit belge et en droit OHADA, ainsi qu'en médiation et en arbitrage.",
+          "RC Consulting pratique le droit belge et le droit OHADA.\n\nPour d'autres litiges concernant le droit congolais ou d'autres droits nationaux, n'hésitez pas à nous contacter.",
         questionEn: "Which areas of law do you practise?",
         answerEn:
-          "We practise Belgian law and OHADA law, as well as mediation and arbitration.",
+          "RC Consulting practises Belgian law and OHADA law.\n\nFor other disputes involving Congolese law or other national laws, please contact us.",
         order: 2,
         published: true,
         category: "Général",
@@ -156,10 +156,10 @@ async function main() {
       {
         question: "Proposez-vous la médiation et l'arbitrage ?",
         answer:
-          "Oui. Nous agissons pour la prévention et le règlement alternatif des différends civils ou commerciaux.",
+          "Me Charlotte Richard intervient en tant que Médiateur et Arbitre dans vos litiges civils et commerciaux.\n\nLa négociation et la rédaction d'accords ou de clauses compromissoires fait partie de nos services.\n\nNous intervenons également pour l'homologation de vos accords de médiation ou l'exéquatur de vos sentences arbitrales.",
         questionEn: "Do you offer mediation and arbitration?",
         answerEn:
-          "Yes. We act in the prevention and alternative resolution of civil or commercial disputes.",
+          "Me Charlotte Richard acts as Mediator and Arbitrator in your civil and commercial disputes.\n\nNegotiating and drafting agreements or arbitration clauses is part of our services.\n\nWe also act for the homologation of your mediation agreements or the enforcement of your arbitral awards.",
         order: 3,
         published: true,
         category: "MARD",
@@ -167,10 +167,10 @@ async function main() {
       {
         question: "Accompagnez-vous les entrepreneurs et investisseurs ?",
         answer:
-          "Oui. Nous proposons un accompagnement institutionnel entre la Belgique et la RDC, ainsi qu'une assistance à la négociation d'accords et de contrats.",
+          "RC Consulting accompagne tant les particuliers que les investisseurs et entrepreneurs.\n\nNous offrons aux professionnels une prise en charge globale depuis l'élaboration des projets jusqu'à leur concrétisation, du point de vue juridique mais aussi institutionnel et pratique.",
         questionEn: "Do you support entrepreneurs and investors?",
         answerEn:
-          "Yes. We provide institutional support between Belgium and the DRC, as well as assistance with negotiating agreements and contracts.",
+          "RC Consulting supports individuals as well as investors and entrepreneurs.\n\nWe offer professionals comprehensive support from the design of projects through to their completion, from a legal standpoint as well as an institutional and practical one.",
         order: 4,
         published: true,
         category: "Affaires",
@@ -178,10 +178,10 @@ async function main() {
       {
         question: "Conseillez-vous les autorités publiques ?",
         answer:
-          "Oui. Nous accompagnons les autorités publiques en Belgique et en RDC pour la coordination de projets transversaux et la promotion des MARD.",
+          "RC Consulting intervient comme consultant pour les autorités publiques en Belgique et en République démocratique du Congo dans le cadre de la gestion de projets institutionnels et de l'amélioration des politiques publiques.",
         questionEn: "Do you advise public authorities?",
         answerEn:
-          "Yes. We support public authorities in Belgium and the DRC with cross-cutting project coordination and the promotion of ADR.",
+          "RC Consulting acts as a consultant for public authorities in Belgium and the Democratic Republic of the Congo in the management of institutional projects and the improvement of public policies.",
         order: 5,
         published: true,
         category: "Institutions",

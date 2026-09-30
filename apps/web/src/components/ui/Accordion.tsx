@@ -42,7 +42,9 @@ export function Accordion({ items }: { items: Item[] }) {
                   transition={{ duration: 0.28 }}
                   className="overflow-hidden"
                 >
-                  <p className="pb-5 leading-relaxed text-muted">{item.answer}</p>
+                  <p className="pb-5 leading-relaxed whitespace-pre-line text-muted">
+                    {item.answer}
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
