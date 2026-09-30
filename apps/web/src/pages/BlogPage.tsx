@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/api";
 import { Seo } from "@/lib/seo";
 import { PageHero } from "@/components/ui/PageHero";
 import { FadeIn } from "@/components/ui/FadeIn";
@@ -22,42 +22,23 @@ export default function BlogPage() {
   const q = params.get("q") ?? "";
   const category = params.get("category") ?? "";
   const page = Number(params.get("page") ?? "1");
-  const pageSize = 9;
 
   const { data, isLoading } = useQuery({
     queryKey: ["blog", q, category, page],
     queryFn: async () => {
-      let query = supabase
-        .from("articles")
-        .select("id, title, slug, excerpt, cover_image, published_at, category:categories(name, slug)", {
-          count: "exact",
-        })
-        .eq("published", true)
-        .order("published_at", { ascending: false });
-
-      if (q) query = query.or(`title.ilike.%${q}%,excerpt.ilike.%${q}%`);
-      if (category) query = query.eq("category.slug", category);
-
-      const from = (page - 1) * pageSize;
-      const { data, error, count } = await query.range(from, from + pageSize - 1);
-      if (error) throw error;
-      return {
-        items: (data ?? []) as unknown as Article[],
-        page,
-        totalPages: Math.max(1, Math.ceil((count ?? 0) / pageSize)),
-      };
+      const params = new URLSearchParams({ page: String(page) });
+      if (q) params.set("q", q);
+      if (category) params.set("category", category);
+      return api<{ items: Article[]; page: number; totalPages: number }>(
+        `/api/articles?${params.toString()}`,
+      );
     },
   });
 
   const { data: categories = [] } = useQuery({
     queryKey: ["blog-categories"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("id, name, slug")
-        .order("name");
-      if (error) throw error;
-      return (data ?? []) as Category[];
+      return api<Category[]>("/api/categories");
     },
   });
 

@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
-import type { Profile } from "@/types/database";
+import { api, getAdminToken, setAdminToken } from "@/lib/api";
 
 export type AuthUser = {
   id: string;
@@ -10,83 +8,69 @@ export type AuthUser = {
   name?: string | null;
 };
 
-async function fetchProfile(userId: string): Promise<Profile | null> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .maybeSingle();
-  if (error) throw error;
-  return data;
+type Me = {
+  id: string;
+  email: string;
+  role: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+};
+
+async function fetchMe(): Promise<Me | null> {
+  if (!getAdminToken()) return null;
+  try {
+    return await api<Me>("/api/me");
+  } catch {
+    setAdminToken(null);
+    return null;
+  }
 }
 
 export function useAuth() {
   const qc = useQueryClient();
-  const [sessionReady, setSessionReady] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setUserId(data.session?.user.id ?? null);
-      setEmail(data.session?.user.email ?? null);
-      setSessionReady(true);
-    });
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserId(session?.user.id ?? null);
-      setEmail(session?.user.email ?? null);
-      setSessionReady(true);
-      void qc.invalidateQueries({ queryKey: ["auth", "profile"] });
-    });
-
-    return () => {
-      mounted = false;
-      sub.subscription.unsubscribe();
-    };
-  }, [qc]);
 
   const profileQuery = useQuery({
-    queryKey: ["auth", "profile", userId],
-    queryFn: () => fetchProfile(userId!),
-    enabled: sessionReady && !!userId,
+    queryKey: ["auth", "me"],
+    queryFn: fetchMe,
     retry: false,
+    staleTime: 30_000,
   });
 
   const profile = profileQuery.data;
-  const user: AuthUser | undefined =
-    userId && email
-      ? {
-          id: userId,
-          email,
-          role: profile?.role === "admin" ? "ADMIN" : "CLIENT",
-          name:
-            [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") ||
-            null,
-        }
-      : undefined;
+  const user: AuthUser | undefined = profile
+    ? {
+        id: profile.id,
+        email: profile.email,
+        role: profile.role === "admin" ? "ADMIN" : "CLIENT",
+        name:
+          [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
+          null,
+      }
+    : undefined;
 
   async function login(loginEmail: string, password: string) {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: loginEmail,
-      password,
+    const data = await api<{ token: string; user: Me }>("/api/login", {
+      method: "POST",
+      body: JSON.stringify({ email: loginEmail, password }),
     });
-    if (error) throw error;
-    await qc.invalidateQueries({ queryKey: ["auth"] });
+    setAdminToken(data.token);
+    qc.setQueryData(["auth", "me"], data.user);
   }
 
   async function logout() {
-    await supabase.auth.signOut();
-    qc.setQueryData(["auth", "profile", userId], null);
-    await qc.invalidateQueries({ queryKey: ["auth"] });
+    try {
+      await api("/api/logout", { method: "POST" });
+    } catch {
+      // Le jeton local est retiré même si l'API est injoignable.
+    }
+    setAdminToken(null);
+    qc.setQueryData(["auth", "me"], null);
   }
 
   return {
     user,
-    isLoading: !sessionReady || (!!userId && profileQuery.isLoading),
+    isLoading: profileQuery.isLoading,
     isAdmin: profile?.role === "admin",
     login,
     logout,

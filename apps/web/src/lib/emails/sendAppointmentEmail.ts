@@ -1,4 +1,3 @@
-import { supabase } from "@/lib/supabase";
 import type { Appointment } from "@/types/database";
 import { buildAppointmentEmailVars } from "./buildVars";
 import type {
@@ -26,30 +25,11 @@ export async function sendAppointmentEmail(
       return { ok: false, error };
     }
 
-    const { data, error } = await supabase.functions.invoke(
-      "send-appointment-email",
-      {
-        body: { type, vars },
-      },
-    );
-
-    if (error) {
-      console.error("[email] invoke failed", type, error);
-      return { ok: false, error: error.message };
-    }
-
-    if (data && typeof data === "object" && "error" in data && data.error) {
-      const msg = String((data as { error: unknown }).error);
-      console.error("[email] provider error", type, msg);
-      return { ok: false, error: msg };
-    }
-
-    const id =
-      data && typeof data === "object" && "id" in data
-        ? String((data as { id: unknown }).id)
-        : undefined;
-
-    return { ok: true, id };
+    void vars;
+    return {
+      ok: false,
+      error: "Notification email non configurée sur le backend Laravel.",
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur d'envoi email";
     console.error("[email] unexpected", type, err);

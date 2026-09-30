@@ -1,20 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/api";
 import { STATIC_FAQ } from "@/data/staticFaq";
 import { asFaqList, type FaqRecord } from "@/lib/localizeFaq";
+
+type FaqRow = {
+  id: string;
+  question: string;
+  answer: string;
+  question_en?: string | null;
+  answer_en?: string | null;
+  category?: string | null;
+  sort_order: number;
+  published: boolean;
+};
 
 export function useFaq() {
   return useQuery({
     queryKey: ["faq"],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from("faqs")
-          .select("*")
-          .eq("published", true)
-          .order("sort_order", { ascending: true });
-        if (error) throw error;
-        const mapped: FaqRecord[] = (data ?? []).map((f) => ({
+        const data = await api<FaqRow[]>("/api/faqs");
+        const mapped: FaqRecord[] = data.map((f) => ({
           id: f.id,
           question: f.question,
           answer: f.answer,

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import { ApiError } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 
 export default function AdminLoginPage() {
-  const { user, isAdmin, isLoading } = useAuth();
+  const { user, isAdmin, isLoading, login } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -31,48 +31,15 @@ export default function AdminLoginPage() {
             setError("");
 
             try {
-              const { data, error: authError } =
-                await supabase.auth.signInWithPassword({ email, password });
-
-              if (authError) {
-                setError(
-                  authError.message.includes("Invalid login")
-                    ? "Identifiants invalides"
-                    : authError.message,
-                );
-                return;
-              }
-
-              const uid = data.user?.id;
-              if (!uid) {
-                setError("Connexion impossible (session vide).");
-                return;
-              }
-
-              const { data: profile, error: profileError } = await supabase
-                .from("profiles")
-                .select("role")
-                .eq("id", uid)
-                .maybeSingle();
-
-              if (profileError) {
-                setError(`Profil inaccessible : ${profileError.message}`);
-                await supabase.auth.signOut();
-                return;
-              }
-
-              if (profile?.role !== "admin") {
-                await supabase.auth.signOut();
-                setError(
-                  "Ce compte n'a pas les droits administrateur. Dans Supabase SQL : update profiles set role = 'admin' where email = '…';",
-                );
-                return;
-              }
-
+              await login(email, password);
               navigate("/admin", { replace: true });
             } catch (err) {
               setError(
-                err instanceof Error ? err.message : "Erreur de connexion",
+                err instanceof ApiError
+                  ? err.message
+                  : err instanceof Error
+                    ? err.message
+                    : "Erreur de connexion",
               );
             } finally {
               setPending(false);

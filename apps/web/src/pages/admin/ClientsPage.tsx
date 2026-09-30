@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchClients } from "@/lib/admin";
+import { deleteClient, fetchClients } from "@/lib/admin";
 import { downloadClientsExcel } from "@/lib/exportClientsExcel";
-import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 
 export default function ClientsPage() {
@@ -13,8 +12,7 @@ export default function ClientsPage() {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("clients").delete().eq("id", id);
-      if (error) throw error;
+      await deleteClient(id);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-clients"] }),
   });

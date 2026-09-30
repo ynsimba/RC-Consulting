@@ -13,6 +13,12 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:8000",
+        changeOrigin: true,
+      },
+    },
     watch: {
       // Empêche HMR cassé par les builds Hostinger dans apps/web/
       ignored: [

@@ -1,16 +1,18 @@
-import { supabase } from "@/lib/supabase";
-import type { Appointment, AppointmentStatus } from "@/types/database";
+import { api } from "@/lib/api";
 import { notifyAdminNewAppointment } from "@/lib/emails/notifyAdmin";
+import type { Appointment, AppointmentStatus } from "@/types/database";
+
+type Settings = {
+  id: number;
+  allowed_durations: number[];
+  timezone: string;
+};
 
 export async function fetchAvailableSlots(date: string, duration: number) {
-  const { data, error } = await supabase.rpc("get_available_slots", {
-    p_date: date,
-    p_duration: duration,
-  });
-  if (error) throw error;
-  return ((data ?? []) as { slot_time: string }[]).map(
-    (row: { slot_time: string }) => row.slot_time,
+  const data = await api<{ slots: string[] }>(
+    `/api/slots?date=${encodeURIComponent(date)}&duration=${duration}`,
   );
+  return data.slots;
 }
 
 export async function createPublicAppointment(input: {
@@ -23,21 +25,21 @@ export async function createPublicAppointment(input: {
   duration: number;
   startsAt: string;
 }) {
-  const { data, error } = await supabase.rpc("create_public_appointment", {
-    p_first_name: input.firstName,
-    p_last_name: input.lastName,
-    p_email: input.email,
-    p_phone: input.phone,
-    p_subject: input.subject,
-    p_description: input.description,
-    p_duration: input.duration,
-    p_starts_at: input.startsAt,
-    p_type: "cabinet",
+  const appointment = await api<Appointment>("/api/appointments", {
+    method: "POST",
+    body: JSON.stringify({
+      first_name: input.firstName,
+      last_name: input.lastName,
+      email: input.email,
+      phone: input.phone,
+      subject: input.subject,
+      description: input.description,
+      duration: input.duration,
+      starts_at: input.startsAt,
+      type: "cabinet",
+    }),
   });
-  if (error) throw error;
-  const appointment = data as Appointment;
 
-  // Non bloquant : la demande reste enregistrée même si l'email admin échoue.
   void notifyAdminNewAppointment(appointment.id).then((result) => {
     if (!result.ok) {
       console.error("[booking] notification admin non envoyée:", result.error);
@@ -48,11 +50,7 @@ export async function createPublicAppointment(input: {
 }
 
 export async function getAppointmentByToken(token: string) {
-  const { data, error } = await supabase.rpc("get_appointment_by_token", {
-    p_token: token,
-  });
-  if (error) throw error;
-  return data as {
+  return api<{
     id: string;
     duration: number;
     starts_at: string;
@@ -68,7 +66,7 @@ export async function getAppointmentByToken(token: string) {
       email: string;
       phone: string | null;
     };
-  } | null;
+  } | null>(`/api/appointments/manage/${token}`);
 }
 
 export async function manageAppointmentByToken(
@@ -77,22 +75,16 @@ export async function manageAppointmentByToken(
   startsAt?: string,
   duration?: number,
 ) {
-  const { data, error } = await supabase.rpc("manage_appointment_by_token", {
-    p_token: token,
-    p_action: action,
-    p_starts_at: startsAt ?? null,
-    p_duration: duration ?? null,
+  return api(`/api/appointments/manage/${token}`, {
+    method: "POST",
+    body: JSON.stringify({
+      action,
+      starts_at: startsAt ?? null,
+      duration: duration ?? null,
+    }),
   });
-  if (error) throw error;
-  return data;
 }
 
 export async function fetchSettings() {
-  const { data, error } = await supabase
-    .from("settings")
-    .select("*")
-    .eq("id", 1)
-    .maybeSingle();
-  if (error) throw error;
-  return data;
+  return api<Settings>("/api/settings");
 }

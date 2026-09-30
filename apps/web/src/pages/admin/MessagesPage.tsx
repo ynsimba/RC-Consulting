@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 
 type Message = {
@@ -22,22 +22,16 @@ export default function MessagesPage() {
   const { data = [], isLoading } = useQuery({
     queryKey: ["admin-messages"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Message[];
+      return api<Message[]>("/api/admin/messages");
     },
   });
 
   const markRead = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("messages")
-        .update({ read: true })
-        .eq("id", id);
-      if (error) throw error;
+      await api(`/api/admin/messages/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ read: true }),
+      });
     },
     onSuccess: (_data, id) => {
       void qc.invalidateQueries({ queryKey: ["admin-messages"] });
@@ -49,8 +43,7 @@ export default function MessagesPage() {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("messages").delete().eq("id", id);
-      if (error) throw error;
+      await api(`/api/admin/messages/${id}`, { method: "DELETE" });
     },
     onSuccess: (_data, id) => {
       void qc.invalidateQueries({ queryKey: ["admin-messages"] });

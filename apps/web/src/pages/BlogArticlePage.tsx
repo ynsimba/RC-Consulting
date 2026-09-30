@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/api";
 import { Seo } from "@/lib/seo";
 import { PageHero } from "@/components/ui/PageHero";
 import { Button } from "@/components/ui/Button";
@@ -22,17 +22,7 @@ export default function BlogArticlePage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["article", slug],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("articles")
-        .select(
-          "title, slug, excerpt, content, cover_image, seo_title, seo_description, published_at, category:categories(name)",
-        )
-        .eq("slug", slug!)
-        .eq("published", true)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) throw new Error("not found");
-      return data as unknown as Article;
+      return api<Article>(`/api/articles/${slug}`);
     },
     enabled: !!slug,
   });
