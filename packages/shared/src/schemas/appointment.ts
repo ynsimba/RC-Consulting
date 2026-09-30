@@ -4,7 +4,6 @@ export const appointmentTypeSchema = z.enum(["CABINET", "PHONE", "VIDEO"]);
 export const appointmentDurationSchema = z.union([
   z.literal(30),
   z.literal(60),
-  z.literal(90),
 ]);
 export const appointmentStatusSchema = z.enum([
   "PENDING",
@@ -54,7 +53,7 @@ export const availabilityQuerySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide (YYYY-MM-DD)"),
   duration: z.coerce
     .number()
-    .refine((v) => [30, 60, 90].includes(v), "Durée invalide"),
+    .refine((v) => [30, 60].includes(v), "Durée invalide"),
   type: appointmentTypeSchema.optional(),
 });
 

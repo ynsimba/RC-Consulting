@@ -18,8 +18,8 @@ const days = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
 const emptyWindowForm = {
   day_of_week: 1,
-  start_time: "08:30",
-  end_time: "18:00",
+  start_time: "09:30",
+  end_time: "18:30",
 };
 
 function toTimeInput(value: string) {
@@ -119,7 +119,7 @@ export default function AvailabilityPage() {
     mutationFn: () => {
       const source =
         durationsText ||
-        (settingsQuery.data?.allowed_durations ?? [30, 60, 90]).join(",");
+        (settingsQuery.data?.allowed_durations ?? [30, 60]).join(",");
       const list = source
         .split(/[,\s]+/)
         .map((x: string) => Number(x.trim()))
@@ -151,7 +151,7 @@ export default function AvailabilityPage() {
         </h2>
         <p className="mt-1 text-xs text-muted">
           Actuelles :{" "}
-          {(settingsQuery.data?.allowed_durations ?? [30, 60, 90]).join(" / ")}{" "}
+          {(settingsQuery.data?.allowed_durations ?? [30, 60]).join(" / ")}{" "}
           min
         </p>
         <form
@@ -163,7 +163,7 @@ export default function AvailabilityPage() {
         >
           <input
             className="min-w-[14rem] flex-1 border border-line px-3 py-2 text-sm"
-            placeholder="Ex. 30, 45, 60, 90"
+            placeholder="Ex. 30, 60"
             value={durationsText}
             onChange={(e) => setDurationsText(e.target.value)}
           />

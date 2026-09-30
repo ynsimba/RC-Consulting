@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/Button";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { useLanguage } from "@/i18n/LanguageContext";
 
-const FALLBACK_DURATIONS: AppointmentDuration[] = [30, 60, 90];
+const FALLBACK_DURATIONS: AppointmentDuration[] = [30, 60];
 const MAX_MONTHS_AHEAD = 6;
 
 const bookingFormSchema = createAppointmentSchema
@@ -101,9 +101,11 @@ export default function BookingPage() {
     queryFn: fetchSettings,
   });
 
-  const durations = (settingsQuery.data?.allowed_durations?.length
-    ? settingsQuery.data.allowed_durations
-    : FALLBACK_DURATIONS) as AppointmentDuration[];
+  const durations = (
+    settingsQuery.data?.allowed_durations?.length
+      ? settingsQuery.data.allowed_durations
+      : FALLBACK_DURATIONS
+  ).filter((d): d is AppointmentDuration => d === 30 || d === 60);
 
   const monthCells = useMemo(
     () => getMonthCells(viewYear, viewMonth),

@@ -112,7 +112,7 @@ create index if not exists blocked_slots_date_idx on public.blocked_slots (date)
 -- ---------------------------------------------------------------------------
 create table if not exists public.settings (
   id int primary key default 1 check (id = 1),
-  allowed_durations int[] not null default '{30,60,90}',
+  allowed_durations int[] not null default '{30,60}',
   timezone text not null default 'Europe/Brussels',
   updated_at timestamptz not null default now()
 );
@@ -248,10 +248,10 @@ after insert on auth.users
 for each row execute function public.handle_new_user();
 
 -- ---------------------------------------------------------------------------
--- Seed horaires Lun–Ven 08:30–18:00
+-- Seed horaires Lun–Ven 09:30–18:30
 -- ---------------------------------------------------------------------------
 insert into public.availability_windows (day_of_week, start_time, end_time, is_active)
-select d, time '08:30', time '18:00', true
+select d, time '09:30', time '18:30', true
 from generate_series(1, 5) as d
 on conflict (day_of_week, start_time, end_time) do nothing;
 
