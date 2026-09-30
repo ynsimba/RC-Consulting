@@ -44,7 +44,6 @@ export function HeroSection() {
           repeatType: "mirror",
         }}
       />
-      <div className="hero-overlay absolute inset-0" />
 
       <div className="container-rc relative z-10 flex w-full flex-col items-center px-4 py-16 text-center sm:py-24 md:py-28">
         <div className="flex w-full max-w-4xl flex-col items-center">

@@ -16,10 +16,7 @@ export default function PracticeAreasPage() {
         description={t.expertise.seoDesc}
         path="/nos-expertises"
       />
-      <PageHero
-        title={t.expertise.heroTitle}
-        subtitle={t.expertise.heroSubtitle}
-      />
+      <PageHero title={t.expertise.heroTitle} />
       <section className="section-pad">
         <div className="container-rc">
           <SectionHeading

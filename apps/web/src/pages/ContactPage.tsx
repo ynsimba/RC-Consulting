@@ -91,10 +91,7 @@ export default function ContactPage() {
         description={t.contact.seoDesc}
         path="/contact"
       />
-      <PageHero
-        title={t.contact.heroTitle}
-        subtitle={t.contact.heroSubtitle}
-      />
+      <PageHero title={t.contact.heroTitle} />
 
       <section className="section-pad">
         <div className="container-rc grid gap-12 lg:grid-cols-2">

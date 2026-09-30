@@ -27,10 +27,7 @@ export default function FaqPage() {
           })),
         }}
       />
-      <PageHero
-        title={t.faqPage.heroTitle}
-        subtitle={t.faqPage.heroSubtitle}
-      />
+      <PageHero title={t.faqPage.heroTitle} />
       <section className="section-pad">
         <div className="container-rc max-w-3xl">
           <SectionHeading

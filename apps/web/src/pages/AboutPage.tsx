@@ -26,7 +26,7 @@ export default function AboutPage() {
           },
         }}
       />
-      <PageHero title={t.about.heroTitle} showBrand={false} />
+      <PageHero title={t.about.heroTitle} />
 
       <section className="section-pad">
         <div className="container-rc grid items-center gap-12 lg:grid-cols-2">

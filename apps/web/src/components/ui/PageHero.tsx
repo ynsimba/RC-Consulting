@@ -5,8 +5,6 @@ type Props = {
   subtitle?: string;
   image?: string;
   compact?: boolean;
-  /** Affiche « RC Consulting » au-dessus du titre (défaut: true). */
-  showBrand?: boolean;
 };
 
 const DEFAULT = "/bc.png";
@@ -16,7 +14,6 @@ export function PageHero({
   subtitle,
   image = DEFAULT,
   compact = false,
-  showBrand = true,
 }: Props) {
   return (
     <section
@@ -30,7 +27,7 @@ export function PageHero({
         src={image}
         alt=""
         loading="eager"
-        className="absolute inset-0 h-full w-full object-cover object-[center_35%] grayscale will-change-transform motion-reduce:transform-none sm:object-center"
+        className="absolute inset-0 h-full w-full object-cover object-[center_35%] will-change-transform motion-reduce:transform-none sm:object-center"
         initial={{ scale: 1.08 }}
         animate={{
           scale: [1.08, 1.14, 1.08],
@@ -43,21 +40,11 @@ export function PageHero({
           repeatType: "mirror",
         }}
       />
-      <div className="hero-overlay absolute inset-0" />
       <div
         className={`container-rc relative z-10 text-center ${
           compact ? "py-5 md:py-6" : "py-20"
         }`}
       >
-        {!compact && showBrand && (
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-3 font-serif text-sm tracking-[0.25em] text-gold uppercase"
-          >
-            RC Consulting
-          </motion.p>
-        )}
         <motion.h1
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
