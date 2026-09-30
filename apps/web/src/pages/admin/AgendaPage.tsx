@@ -17,6 +17,15 @@ import {
   toLocalYmd,
 } from "@/lib/datetime";
 import type { Appointment, AppointmentStatus } from "@/types/database";
+import {
+  Avatar,
+  EmptyState,
+  Icon,
+  PageHeader,
+  SkeletonRows,
+  StatusBadge,
+  formatTime,
+} from "@/components/admin/ui";
 
 function monthCells(year: number, month: number) {
   const first = new Date(year, month, 1);
@@ -28,20 +37,13 @@ function monthCells(year: number, month: number) {
   return cells;
 }
 
-const STATUS_LABEL: Record<AppointmentStatus, string> = {
-  pending: "En attente",
-  confirmed: "Confirmé",
-  refused: "Refusé",
-  cancelled: "Annulé",
-  completed: "Terminé",
-};
-
 export default function AgendaPage() {
   const qc = useQueryClient();
   const today = useMemo(() => new Date(), []);
+  const todayYmd = toLocalYmd(today);
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
-  const [selectedDay, setSelectedDay] = useState(toLocalYmd(today));
+  const [selectedDay, setSelectedDay] = useState(todayYmd);
 
   const todayQuery = useQuery({
     queryKey: ["admin-today"],
@@ -68,16 +70,22 @@ export default function AgendaPage() {
   });
 
   const dayList = useMemo(() => {
-    return (monthQuery.data ?? []).filter(
-      (a) => brusselsYmdFromIso(a.starts_at) === selectedDay,
-    );
+    return (monthQuery.data ?? [])
+      .filter((a) => brusselsYmdFromIso(a.starts_at) === selectedDay)
+      .sort(
+        (a, b) =>
+          new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
+      );
   }, [monthQuery.data, selectedDay]);
 
   const countsByDay = useMemo(() => {
-    const map = new Map<string, number>();
+    const map = new Map<string, { total: number; pending: number }>();
     for (const a of monthQuery.data ?? []) {
       const key = brusselsYmdFromIso(a.starts_at);
-      map.set(key, (map.get(key) ?? 0) + 1);
+      const entry = map.get(key) ?? { total: 0, pending: 0 };
+      entry.total += 1;
+      if (a.status === "pending") entry.pending += 1;
+      map.set(key, entry);
     }
     return map;
   }, [monthQuery.data]);
@@ -130,122 +138,53 @@ export default function AgendaPage() {
     setViewMonth(d.getMonth());
   }
 
+  function goToday() {
+    setViewYear(today.getFullYear());
+    setViewMonth(today.getMonth());
+    setSelectedDay(todayYmd);
+  }
+
+  const todayList = todayQuery.data ?? [];
+  const monthTotal = monthQuery.data?.length ?? 0;
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <header className="flex flex-col gap-3 border-b border-line pb-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-[10px] font-semibold tracking-[0.18em] text-gold uppercase">
-            Cabinet
-          </p>
-          <h1 className="text-2xl font-bold tracking-wide uppercase">Agenda</h1>
-          <p className="mt-1 text-sm text-muted">
-            Rendez-vous du jour et calendrier mensuel.
-          </p>
-        </div>
-        <Link
-          to="/admin/rendez-vous"
-          className="text-xs font-semibold tracking-wide text-gold uppercase hover:underline"
-        >
-          Tous les RDV →
-        </Link>
-      </header>
+      <PageHeader
+        eyebrow="Pilotage"
+        title="Agenda"
+        description="Rendez-vous du jour et vue mensuelle du cabinet."
+        actions={
+          <Link to="/admin/rendez-vous" className="adm-btn">
+            <Icon name="list" />
+            Tous les rendez-vous
+          </Link>
+        }
+      />
 
-      <section className="border border-line bg-white">
-        <div className="border-b border-line px-4 py-3">
-          <h2 className="text-[11px] font-semibold tracking-[0.16em] text-muted uppercase">
-            Aujourd’hui —{" "}
-            {today.toLocaleDateString("fr-FR", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-            })}
-          </h2>
-        </div>
-        <ul className="divide-y divide-line">
-          {(todayQuery.data ?? []).map((a) => (
-            <AgendaRow
-              key={a.id}
-              appointment={a}
-              onStatus={(status) => mutation.mutate({ appointment: a, status })}
-              onDelete={() => confirmDelete(a.id)}
-            />
-          ))}
-          {(todayQuery.data ?? []).length === 0 && (
-            <li className="px-4 py-6 text-sm text-muted">
-              Aucun rendez-vous aujourd’hui.
-            </li>
-          )}
-        </ul>
-      </section>
-
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <section className="border border-line bg-white p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <button
-              type="button"
-              className="h-8 w-8 border border-line"
-              onClick={() => shiftMonth(-1)}
-              aria-label="Mois précédent"
-            >
-              ‹
-            </button>
-            <p className="text-sm font-bold tracking-wide uppercase">
-              {new Date(viewYear, viewMonth, 1).toLocaleDateString("fr-FR", {
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
-            <button
-              type="button"
-              className="h-8 w-8 border border-line"
-              onClick={() => shiftMonth(1)}
-              aria-label="Mois suivant"
-            >
-              ›
-            </button>
-          </div>
-          <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted uppercase">
-            {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
-              <div key={`${d}-${i}`} className="py-1">
-                {d}
-              </div>
-            ))}
-            {monthCells(viewYear, viewMonth).map((d, i) => {
-              if (!d) return <div key={`e-${i}`} className="h-9" />;
-              const key = toLocalYmd(d);
-              const count = countsByDay.get(key) ?? 0;
-              const selected = key === selectedDay;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setSelectedDay(key)}
-                  className={`relative h-9 text-sm font-semibold ${
-                    selected ? "bg-gold text-white" : "hover:bg-gold/15"
-                  }`}
-                >
-                  {d.getDate()}
-                  {count > 0 && !selected && (
-                    <span className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-gold" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="border border-line bg-white">
-          <div className="border-b border-line px-4 py-3">
-            <h2 className="text-[11px] font-semibold tracking-[0.16em] text-muted uppercase">
-              {new Date(selectedDay + "T12:00:00").toLocaleDateString("fr-FR", {
+      {/* Aujourd’hui */}
+      <section className="adm-card overflow-hidden">
+        <div className="adm-card-head">
+          <div>
+            <h2 className="adm-card-title">Aujourd’hui</h2>
+            <p className="mt-0.5 text-[13px] text-muted capitalize">
+              {today.toLocaleDateString("fr-FR", {
                 weekday: "long",
                 day: "numeric",
                 month: "long",
               })}
-            </h2>
+            </p>
           </div>
-          <ul className="divide-y divide-line">
-            {dayList.map((a) => (
+          <span className="rounded-full bg-soft px-2.5 py-1 text-[13px] font-medium text-muted tabular-nums">
+            {todayList.length} RDV
+          </span>
+        </div>
+        {todayQuery.isLoading ? (
+          <SkeletonRows rows={2} />
+        ) : todayList.length === 0 ? (
+          <EmptyState icon="calendar" title="Aucun rendez-vous aujourd’hui" />
+        ) : (
+          <ul className="divide-y divide-line/50">
+            {todayList.map((a) => (
               <AgendaRow
                 key={a.id}
                 appointment={a}
@@ -253,12 +192,153 @@ export default function AgendaPage() {
                 onDelete={() => confirmDelete(a.id)}
               />
             ))}
-            {dayList.length === 0 && (
-              <li className="px-4 py-6 text-sm text-muted">
-                Aucun rendez-vous ce jour.
-              </li>
-            )}
           </ul>
+        )}
+      </section>
+
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-5">
+        {/* Calendrier */}
+        <section className="adm-card p-4 sm:p-5">
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <div>
+              <p className="text-base font-semibold text-ink capitalize">
+                {new Date(viewYear, viewMonth, 1).toLocaleDateString("fr-FR", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </p>
+              <p className="text-[13px] text-muted">
+                {monthTotal} rendez-vous ce mois
+              </p>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={goToday}
+                className="adm-btn adm-btn-sm mr-1"
+              >
+                Aujourd’hui
+              </button>
+              <button
+                type="button"
+                className="adm-icon-btn border border-line"
+                onClick={() => shiftMonth(-1)}
+                aria-label="Mois précédent"
+              >
+                <Icon name="chevronLeft" />
+              </button>
+              <button
+                type="button"
+                className="adm-icon-btn border border-line"
+                onClick={() => shiftMonth(1)}
+                aria-label="Mois suivant"
+              >
+                <Icon name="chevronRight" />
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-7 gap-1 text-center">
+            {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((d) => (
+              <div
+                key={d}
+                className="pb-2 text-[12px] font-medium tracking-wide text-muted uppercase"
+              >
+                {d}
+              </div>
+            ))}
+            {monthCells(viewYear, viewMonth).map((d, i) => {
+              if (!d) return <div key={`e-${i}`} className="aspect-square" />;
+              const key = toLocalYmd(d);
+              const info = countsByDay.get(key);
+              const selected = key === selectedDay;
+              const isToday = key === todayYmd;
+              const weekend = d.getDay() === 0 || d.getDay() === 6;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setSelectedDay(key)}
+                  aria-pressed={selected}
+                  aria-label={`${d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}${info ? `, ${info.total} rendez-vous` : ""}`}
+                  className={`relative flex aspect-square flex-col items-center justify-center rounded-lg text-[15px] transition ${
+                    selected
+                      ? "bg-brown-deep font-semibold text-white shadow-md"
+                      : isToday
+                        ? "font-semibold text-gold-dark ring-1 ring-gold ring-inset hover:bg-gold/10"
+                        : weekend
+                          ? "text-muted/70 hover:bg-soft"
+                          : "text-ink hover:bg-soft"
+                  }`}
+                >
+                  {d.getDate()}
+                  {info && (
+                    <span className="absolute bottom-1.5 flex gap-0.5">
+                      {Array.from({ length: Math.min(info.total, 3) }).map(
+                        (_, j) => (
+                          <span
+                            key={j}
+                            className={`h-1 w-1 rounded-full ${
+                              selected
+                                ? "bg-gold-light"
+                                : j < info.pending
+                                  ? "bg-gold"
+                                  : "bg-brown/60"
+                            }`}
+                          />
+                        ),
+                      )}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-4 flex items-center gap-4 border-t border-line/60 pt-3 text-[12px] text-muted">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-gold" /> En attente
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-brown/60" /> Autres
+            </span>
+          </div>
+        </section>
+
+        {/* Jour sélectionné */}
+        <section className="adm-card overflow-hidden">
+          <div className="adm-card-head">
+            <div>
+              <h2 className="adm-card-title capitalize">
+                {new Date(selectedDay + "T12:00:00").toLocaleDateString("fr-FR", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                })}
+              </h2>
+              <p className="mt-0.5 text-[13px] text-muted">
+                {dayList.length} rendez-vous
+              </p>
+            </div>
+          </div>
+          {monthQuery.isLoading ? (
+            <SkeletonRows rows={3} />
+          ) : dayList.length === 0 ? (
+            <EmptyState
+              icon="calendar"
+              title="Aucun rendez-vous ce jour"
+              hint="Sélectionnez une autre date dans le calendrier."
+            />
+          ) : (
+            <ul className="divide-y divide-line/50">
+              {dayList.map((a) => (
+                <AgendaRow
+                  key={a.id}
+                  appointment={a}
+                  onStatus={(status) => mutation.mutate({ appointment: a, status })}
+                  onDelete={() => confirmDelete(a.id)}
+                />
+              ))}
+            </ul>
+          )}
         </section>
       </div>
     </div>
@@ -275,55 +355,68 @@ function AgendaRow({
   onDelete: () => void;
 }) {
   return (
-    <li className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p className="text-xs tracking-wide text-gold uppercase">
-          {STATUS_LABEL[a.status] ?? a.status}
-        </p>
-        <p className="mt-0.5 font-semibold">
-          {new Date(a.starts_at).toLocaleTimeString("fr-FR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}{" "}
-          — {a.subject}
-        </p>
-        <p className="text-sm text-muted">
-          {a.client?.first_name} {a.client?.last_name}
-          {a.client?.phone ? ` · ${a.client.phone}` : ""}
-        </p>
-        <p className="text-xs text-muted">{a.client?.email}</p>
+    <li className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
+      <div className="flex min-w-0 flex-1 items-center gap-4">
+        <div className="w-14 shrink-0 rounded-lg bg-soft py-1.5 text-center ring-1 ring-line/70">
+          <p className="text-[15px] font-semibold text-ink tabular-nums">
+            {formatTime(a.starts_at)}
+          </p>
+          <p className="text-[11px] text-muted">{a.duration} min</p>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="truncate text-[15px] font-medium text-ink">{a.subject}</p>
+            <StatusBadge status={a.status} />
+          </div>
+          <div className="mt-1 flex items-center gap-2">
+            <Avatar first={a.client?.first_name} last={a.client?.last_name} size="sm" />
+            <p className="min-w-0 truncate text-[13px] text-muted">
+              <span className="text-ink/80">
+                {a.client?.first_name} {a.client?.last_name}
+              </span>
+              {a.client?.phone ? ` · ${a.client.phone}` : ""}
+              {a.client?.email ? ` · ${a.client.email}` : ""}
+            </p>
+          </div>
+        </div>
       </div>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex shrink-0 flex-wrap items-center gap-1.5">
         {a.status === "pending" && (
           <>
             <button
               type="button"
-              className="border border-gold bg-gold px-2.5 py-1.5 text-[11px] font-semibold text-white uppercase"
+              className="adm-btn-primary adm-btn-sm"
               onClick={() => onStatus("confirmed")}
             >
+              <Icon name="check" className="h-3.5 w-3.5" />
               Confirmer
             </button>
             <button
               type="button"
-              className="border border-line px-2.5 py-1.5 text-[11px] font-semibold uppercase"
+              className="adm-btn adm-btn-sm"
               onClick={() => onStatus("refused")}
             >
+              <Icon name="x" className="h-3.5 w-3.5" />
               Refuser
             </button>
           </>
         )}
         <Link
           to="/admin/rendez-vous"
-          className="border border-line px-2.5 py-1.5 text-[11px] font-semibold uppercase hover:border-gold"
+          className="adm-icon-btn"
+          aria-label="Modifier"
+          title="Modifier"
         >
-          Modifier
+          <Icon name="edit" />
         </Link>
         <button
           type="button"
-          className="border border-line px-2.5 py-1.5 text-[11px] font-semibold text-red-700 uppercase"
+          className="adm-icon-btn hover:!bg-red-50 hover:!text-red-700"
           onClick={onDelete}
+          aria-label="Supprimer"
+          title="Supprimer"
         >
-          Supprimer
+          <Icon name="trash" />
         </button>
       </div>
     </li>

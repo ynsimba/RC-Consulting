@@ -85,6 +85,82 @@
     @apply py-16 md:py-24;
   }
 
+  /* ---------- Back-office ---------- */
+  .adm-card {
+    @apply rounded-xl border border-line/80 bg-white;
+    box-shadow:
+      0 1px 2px rgba(42, 31, 24, 0.04),
+      0 4px 16px -6px rgba(61, 43, 31, 0.08);
+  }
+
+  .adm-card-head {
+    @apply flex items-center justify-between gap-3 border-b border-line/70 px-4 py-3.5 sm:px-5;
+  }
+
+  .adm-card-title {
+    @apply text-[15px] font-semibold text-ink;
+  }
+
+  .adm-eyebrow {
+    @apply text-[12px] font-semibold tracking-[0.14em] text-gold-dark uppercase;
+  }
+
+  .adm-btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-line bg-white px-3.5 py-2 text-[14px] font-medium text-ink transition duration-150 hover:border-gold/60 hover:bg-soft disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .adm-btn-primary {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-[14px] font-semibold text-white transition duration-150 disabled:pointer-events-none disabled:opacity-50;
+    background: linear-gradient(180deg, #d0b16b 0%, #c4a35a 55%, #a8863f 100%);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.25) inset,
+      0 4px 12px -4px rgba(154, 122, 58, 0.55);
+  }
+
+  .adm-btn-primary:hover {
+    filter: brightness(1.05);
+  }
+
+  .adm-btn-danger {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-white px-3.5 py-2 text-[14px] font-medium text-red-700 transition duration-150 hover:border-red-300 hover:bg-red-50 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .adm-btn-sm {
+    @apply !px-2.5 !py-1.5 !text-[13px];
+  }
+
+  .adm-icon-btn {
+    @apply inline-grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-soft hover:text-ink;
+  }
+
+  .adm-input {
+    @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-[15px] text-ink placeholder:text-muted/60 transition outline-none focus:border-gold focus:ring-3 focus:ring-gold/20 disabled:opacity-60;
+  }
+
+  .adm-label {
+    @apply mb-1.5 block text-[13px] font-medium text-muted;
+  }
+
+  .adm-table {
+    @apply min-w-full text-left text-[15px];
+  }
+
+  .adm-table thead th {
+    @apply border-b border-line/70 bg-[#fbf8f3] px-4 py-3 text-[12px] font-semibold tracking-[0.08em] text-muted uppercase;
+  }
+
+  .adm-table tbody td {
+    @apply border-b border-line/50 px-4 py-3 align-middle;
+  }
+
+  .adm-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .adm-table tbody tr {
+    @apply transition-colors hover:bg-[#fcfaf6];
+  }
+
   .hero-overlay {
     background:
       linear-gradient(

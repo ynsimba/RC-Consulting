@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Button } from "@/components/ui/Button";
+import {
+  Avatar,
+  EmptyState,
+  Icon,
+  Modal,
+  PageHeader,
+  SkeletonRows,
+} from "@/components/admin/ui";
 
 type Message = {
   id: string;
@@ -14,6 +21,73 @@ type Message = {
   read: boolean;
   created_at: string;
 };
+
+function relativeDate(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) {
+    return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  }
+  const sameYear = d.getFullYear() === now.getFullYear();
+  return d.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    ...(sameYear ? {} : { year: "numeric" }),
+  });
+}
+
+function MessageReader({
+  message,
+  onDelete,
+}: {
+  message: Message;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex items-start gap-3">
+        <Avatar first={message.first_name} last={message.last_name} size="lg" />
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-ink">
+            {message.first_name} {message.last_name}
+          </p>
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[13px] text-muted">
+            <a href={`mailto:${message.email}`} className="hover:text-gold-dark">
+              {message.email}
+            </a>
+            {message.phone && (
+              <a href={`tel:${message.phone}`} className="hover:text-gold-dark">
+                {message.phone}
+              </a>
+            )}
+          </p>
+        </div>
+        <p className="hidden shrink-0 text-[13px] text-muted sm:block">
+          {new Date(message.created_at).toLocaleString("fr-FR", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          })}
+        </p>
+      </div>
+      <div className="mt-5 flex-1 rounded-xl bg-[#fbf8f3] p-4 text-[15px] leading-relaxed whitespace-pre-wrap text-ink/85 ring-1 ring-line/60 sm:p-5">
+        {message.message}
+      </div>
+      <div className="mt-5 flex flex-wrap items-center gap-2 safe-pb">
+        <a
+          href={`mailto:${message.email}?subject=${encodeURIComponent(`Re: ${message.subject}`)}`}
+          className="adm-btn-primary"
+        >
+          <Icon name="reply" />
+          Répondre
+        </a>
+        <button type="button" className="adm-btn-danger" onClick={onDelete}>
+          <Icon name="trash" />
+          Supprimer
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function MessagesPage() {
   const qc = useQueryClient();
@@ -35,6 +109,7 @@ export default function MessagesPage() {
     },
     onSuccess: (_data, id) => {
       void qc.invalidateQueries({ queryKey: ["admin-messages"] });
+      void qc.invalidateQueries({ queryKey: ["admin-stats"] });
       setSelected((current) =>
         current?.id === id ? { ...current, read: true } : current,
       );
@@ -47,6 +122,7 @@ export default function MessagesPage() {
     },
     onSuccess: (_data, id) => {
       void qc.invalidateQueries({ queryKey: ["admin-messages"] });
+      void qc.invalidateQueries({ queryKey: ["admin-stats"] });
       setSelected((current) => (current?.id === id ? null : current));
     },
   });
@@ -56,191 +132,139 @@ export default function MessagesPage() {
     if (!m.read) markRead.mutate(m.id);
   }
 
+  function confirmDelete(id: string) {
+    if (confirm("Supprimer ce message ?")) del.mutate(id);
+  }
+
+  const unread = data.filter((m) => !m.read).length;
+
   return (
-    <div className="mx-auto max-w-5xl">
-      <h1 className="text-xl font-bold tracking-wide uppercase sm:text-2xl">
-        Messages
-      </h1>
-      <p className="mt-0.5 text-xs text-muted sm:text-sm">
-        Cliquez sur une ligne pour lire le message.
-      </p>
+    <div className="mx-auto max-w-6xl space-y-6">
+      <PageHeader
+        eyebrow="Gestion"
+        title="Messages"
+        description={
+          unread > 0
+            ? `${unread} message${unread > 1 ? "s" : ""} non lu${unread > 1 ? "s" : ""}.`
+            : "Messages reçus via le formulaire de contact."
+        }
+      />
 
-      {isLoading && (
-        <p className="mt-4 text-sm text-muted">Chargement…</p>
-      )}
-
-      {/* Mobile : cartes compactes */}
-      <ul className="mt-4 space-y-2 md:hidden">
-        {data.map((m) => (
-          <li key={m.id}>
-            <button
-              type="button"
-              onClick={() => openMessage(m)}
-              className={`w-full border bg-white p-3 text-left ${
-                m.read ? "border-line" : "border-gold"
-              }`}
-            >
-              <p className="text-sm font-semibold">
-                {m.first_name} {m.last_name}
-              </p>
-              <p className="mt-0.5 truncate text-xs text-muted">{m.subject}</p>
-              <p className="mt-1 text-[11px] text-muted">
-                {new Date(m.created_at).toLocaleString("fr-FR", {
-                  dateStyle: "short",
-                  timeStyle: "short",
+      <div className="adm-card overflow-hidden md:grid md:h-[calc(100vh-15rem)] md:min-h-[28rem] md:grid-cols-[minmax(0,22rem)_1fr]">
+        {/* Liste */}
+        <div className="flex min-h-0 flex-col md:border-r md:border-line/70">
+          <div className="flex items-center justify-between border-b border-line/70 px-4 py-3 sm:px-5">
+            <p className="text-[15px] font-semibold text-ink">Boîte de réception</p>
+            <span className="rounded-full bg-soft px-2 py-0.5 text-[12px] text-muted tabular-nums">
+              {data.length}
+            </span>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {isLoading ? (
+              <SkeletonRows rows={5} />
+            ) : data.length === 0 ? (
+              <EmptyState
+                icon="inbox"
+                title="Aucun message"
+                hint="Les messages du formulaire de contact apparaîtront ici."
+              />
+            ) : (
+              <ul className="divide-y divide-line/50">
+                {data.map((m) => {
+                  const active = selected?.id === m.id;
+                  return (
+                    <li key={m.id}>
+                      <button
+                        type="button"
+                        onClick={() => openMessage(m)}
+                        aria-current={active ? "true" : undefined}
+                        className={`relative flex w-full items-start gap-3 px-4 py-3.5 text-left transition sm:px-5 ${
+                          active ? "bg-gold/[0.08]" : "hover:bg-[#fcfaf6]"
+                        }`}
+                      >
+                        {active && (
+                          <span className="absolute inset-y-0 left-0 w-[3px] bg-gold" />
+                        )}
+                        <Avatar first={m.first_name} last={m.last_name} size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-baseline justify-between gap-2">
+                            <p
+                              className={`truncate text-[15px] ${
+                                m.read ? "text-ink/80" : "font-semibold text-ink"
+                              }`}
+                            >
+                              {m.first_name} {m.last_name}
+                            </p>
+                            <span className="shrink-0 text-[12px] text-muted tabular-nums">
+                              {relativeDate(m.created_at)}
+                            </span>
+                          </div>
+                          <p
+                            className={`mt-0.5 flex items-center gap-1.5 text-[14px] ${
+                              m.read ? "text-muted" : "font-medium text-ink"
+                            }`}
+                          >
+                            {!m.read && (
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
+                            )}
+                            <span className="truncate">{m.subject}</span>
+                          </p>
+                          <p className="mt-0.5 truncate text-[13px] text-muted/80">
+                            {m.message}
+                          </p>
+                        </div>
+                      </button>
+                    </li>
+                  );
                 })}
-              </p>
-            </button>
-          </li>
-        ))}
-        {!isLoading && data.length === 0 && (
-          <li className="border border-line bg-white px-3 py-6 text-center text-sm text-muted">
-            Aucun message.
-          </li>
-        )}
-      </ul>
+              </ul>
+            )}
+          </div>
+        </div>
 
-      {/* Desktop : tableau */}
-      <div className="mt-4 hidden overflow-hidden border border-line bg-white md:block">
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-line bg-soft text-xs tracking-wide uppercase">
-              <tr>
-                <th className="px-3 py-2.5">Expéditeur</th>
-                <th className="px-3 py-2.5">Sujet</th>
-                <th className="px-3 py-2.5">Date</th>
-                <th className="px-3 py-2.5">Heure</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((m) => {
-                const d = new Date(m.created_at);
-                return (
-                  <tr
-                    key={m.id}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`Ouvrir le message de ${m.first_name} ${m.last_name}`}
-                    className={`cursor-pointer border-b border-line transition hover:bg-gold/5 ${
-                      m.read ? "" : "bg-gold/5 font-medium"
-                    } ${selected?.id === m.id ? "bg-gold/10" : ""}`}
-                    onClick={() => openMessage(m)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        openMessage(m);
-                      }
-                    }}
-                  >
-                    <td className="px-3 py-2.5">
-                      <div className="font-medium">
-                        {m.first_name} {m.last_name}
-                      </div>
-                      <div className="text-xs font-normal text-muted">
-                        {m.email}
-                      </div>
-                    </td>
-                    <td className="max-w-[18rem] truncate px-3 py-2.5">
-                      {!m.read && (
-                        <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-gold align-middle" />
-                      )}
-                      {m.subject}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2.5">
-                      {d.toLocaleDateString("fr-FR")}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2.5">
-                      {d.toLocaleTimeString("fr-FR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </td>
-                  </tr>
-                );
-              })}
-              {!isLoading && data.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="px-3 py-8 text-center text-sm text-muted"
-                  >
-                    Aucun message.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        {/* Lecteur desktop */}
+        <div className="hidden min-h-0 flex-col md:flex">
+          {selected ? (
+            <>
+              <div className="border-b border-line/70 px-6 py-4">
+                <p className="adm-eyebrow">Message</p>
+                <h2 className="mt-0.5 truncate text-lg font-semibold text-ink">
+                  {selected.subject}
+                </h2>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+                <MessageReader
+                  message={selected}
+                  onDelete={() => confirmDelete(selected.id)}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="grid flex-1 place-items-center">
+              <EmptyState
+                icon="mail"
+                title="Aucun message sélectionné"
+                hint="Choisissez un message dans la liste pour le lire."
+              />
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Lecteur mobile */}
       {selected && (
-        <div
-          className="fixed inset-0 z-50 grid place-items-end bg-ink/40 p-0 sm:place-items-center sm:p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="message-modal-title"
-          onClick={() => setSelected(null)}
-        >
-          <div
-            className="max-h-[92vh] w-full max-w-lg overflow-y-auto border border-line bg-white p-4 sm:p-6"
-            onClick={(e) => e.stopPropagation()}
+        <div className="md:hidden">
+          <Modal
+            eyebrow="Message"
+            title={selected.subject}
+            labelledBy="message-modal-title"
+            onClose={() => setSelected(null)}
           >
-            <p className="text-[10px] font-semibold tracking-[0.18em] text-gold uppercase">
-              Message
-            </p>
-            <h2
-              id="message-modal-title"
-              className="mt-1 text-base font-bold tracking-wide uppercase sm:text-lg"
-            >
-              {selected.subject}
-            </h2>
-            <p className="mt-2 text-sm text-ink">
-              {selected.first_name} {selected.last_name}
-            </p>
-            <p className="mt-0.5 text-xs text-muted">
-              <a
-                href={`mailto:${selected.email}`}
-                className="hover:text-gold"
-              >
-                {selected.email}
-              </a>
-              {selected.phone ? ` · ${selected.phone}` : ""}
-              {" · "}
-              {new Date(selected.created_at).toLocaleString("fr-FR", {
-                dateStyle: "long",
-                timeStyle: "short",
-              })}
-            </p>
-            <div className="mt-4 border-t border-line pt-4 text-sm leading-relaxed whitespace-pre-wrap text-muted">
-              {selected.message}
-            </div>
-            <div className="mt-5 flex flex-wrap gap-2 safe-pb">
-              <a
-                href={`mailto:${selected.email}?subject=${encodeURIComponent(`Re: ${selected.subject}`)}`}
-                className="btn-gold inline-flex items-center px-4 py-2 text-xs font-semibold tracking-wide uppercase"
-              >
-                Répondre
-              </a>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  if (confirm("Supprimer ce message ?")) {
-                    del.mutate(selected.id);
-                  }
-                }}
-              >
-                Supprimer
-              </Button>
-              <button
-                type="button"
-                className="border border-line px-4 py-2 text-xs font-semibold uppercase"
-                onClick={() => setSelected(null)}
-              >
-                Fermer
-              </button>
-            </div>
-          </div>
+            <MessageReader
+              message={selected}
+              onDelete={() => confirmDelete(selected.id)}
+            />
+          </Modal>
         </div>
       )}
     </div>

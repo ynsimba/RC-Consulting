@@ -24,7 +24,7 @@ const STATUS_LABEL: Record<AppointmentStatus, string> = {
 
 const STATUS_COLOR: Record<AppointmentStatus, string> = {
   pending: "#c4a35a",
-  confirmed: "#2a1f18",
+  confirmed: "#3d2b1f",
   refused: "#a34a3a",
   cancelled: "#9a9086",
   completed: "#6b8f71",
@@ -38,6 +38,14 @@ const STATUS_ORDER: AppointmentStatus[] = [
   "completed",
 ];
 
+const TOOLTIP_STYLE = {
+  border: "1px solid #e2d6c6",
+  borderRadius: 10,
+  boxShadow: "0 8px 24px -8px rgba(61,43,31,0.25)",
+  fontSize: 13,
+  padding: "8px 12px",
+};
+
 type Props = {
   appointments: Appointment[];
   isLoading?: boolean;
@@ -45,7 +53,7 @@ type Props = {
 
 function EmptyChart({ label }: { label: string }) {
   return (
-    <div className="grid h-48 place-items-center text-sm text-muted">{label}</div>
+    <div className="grid h-full place-items-center text-[15px] text-muted">{label}</div>
   );
 }
 
@@ -100,28 +108,28 @@ export function DashboardCharts({ appointments, isLoading }: Props) {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="h-64 animate-pulse border border-line bg-white" />
-        <div className="h-64 animate-pulse border border-line bg-white" />
+      <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
+        <div className="adm-card h-80 animate-pulse" />
+        <div className="adm-card h-80 animate-pulse" />
       </div>
     );
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
       <section
-        className="border border-line bg-white"
+        className="adm-card overflow-hidden"
         aria-label="Répartition par statut"
       >
-        <div className="border-b border-line px-3 py-2.5 sm:px-4">
-          <p className="text-[10px] font-semibold tracking-[0.16em] text-muted uppercase">
-            Répartition des RDV
-          </p>
-          <p className="mt-0.5 text-xs text-muted">
-            {total} rendez-vous au total
-          </p>
+        <div className="adm-card-head">
+          <div>
+            <h2 className="adm-card-title">Répartition par statut</h2>
+            <p className="mt-0.5 text-[13px] text-muted">
+              {total} rendez-vous au total
+            </p>
+          </div>
         </div>
-        <div className="h-64 px-1 py-2 sm:px-2">
+        <div className="h-72 px-2 py-3 sm:px-3">
           {byStatus.length === 0 ? (
             <EmptyChart label="Aucune donnée à afficher." />
           ) : (
@@ -133,8 +141,8 @@ export function DashboardCharts({ appointments, isLoading }: Props) {
                   nameKey="name"
                   cx="50%"
                   cy="48%"
-                  innerRadius={52}
-                  outerRadius={78}
+                  innerRadius={60}
+                  outerRadius={88}
                   paddingAngle={2}
                   stroke="#fff"
                   strokeWidth={2}
@@ -145,17 +153,13 @@ export function DashboardCharts({ appointments, isLoading }: Props) {
                 </Pie>
                 <Tooltip
                   formatter={(value) => [`${value ?? 0}`, "RDV"]}
-                  contentStyle={{
-                    border: "1px solid #e6e0d6",
-                    borderRadius: 0,
-                    fontSize: 12,
-                  }}
+                  contentStyle={TOOLTIP_STYLE}
                 />
                 <Legend
                   verticalAlign="bottom"
                   height={36}
                   iconType="circle"
-                  wrapperStyle={{ fontSize: 11 }}
+                  wrapperStyle={{ fontSize: 12 }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -164,18 +168,18 @@ export function DashboardCharts({ appointments, isLoading }: Props) {
       </section>
 
       <section
-        className="border border-line bg-white"
+        className="adm-card overflow-hidden"
         aria-label="Volume mensuel"
       >
-        <div className="border-b border-line px-3 py-2.5 sm:px-4">
-          <p className="text-[10px] font-semibold tracking-[0.16em] text-muted uppercase">
-            Volume sur 6 mois
-          </p>
-          <p className="mt-0.5 text-xs text-muted">
-            Total, confirmés et en attente
-          </p>
+        <div className="adm-card-head">
+          <div>
+            <h2 className="adm-card-title">Volume sur 6 mois</h2>
+            <p className="mt-0.5 text-[13px] text-muted">
+              Total, confirmés et en attente
+            </p>
+          </div>
         </div>
-        <div className="h-64 px-1 py-2 sm:px-2">
+        <div className="h-72 px-2 py-3 sm:px-3">
           {byMonth.every((m) => m.total === 0) ? (
             <EmptyChart label="Aucun rendez-vous sur la période." />
           ) : (
@@ -184,50 +188,50 @@ export function DashboardCharts({ appointments, isLoading }: Props) {
                 data={byMonth}
                 margin={{ top: 8, right: 8, left: -12, bottom: 0 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e6e0d6" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#efe7db" />
                 <XAxis
                   dataKey="label"
-                  tick={{ fill: "#7a7168", fontSize: 11 }}
-                  axisLine={{ stroke: "#e6e0d6" }}
+                  tick={{ fill: "#7a6554", fontSize: 12 }}
+                  axisLine={{ stroke: "#efe7db" }}
                   tickLine={false}
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fill: "#7a7168", fontSize: 11 }}
+                  tick={{ fill: "#7a6554", fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                   width={32}
                 />
                 <Tooltip
-                  contentStyle={{
-                    border: "1px solid #e6e0d6",
-                    borderRadius: 0,
-                    fontSize: 12,
-                  }}
+                  cursor={{ fill: "rgba(196,163,90,0.08)" }}
+                  contentStyle={TOOLTIP_STYLE}
                 />
                 <Legend
                   verticalAlign="top"
                   height={28}
                   iconType="circle"
-                  wrapperStyle={{ fontSize: 11 }}
+                  wrapperStyle={{ fontSize: 12 }}
                 />
                 <Bar
                   dataKey="total"
                   name="Total"
                   fill="#c4a35a"
-                  maxBarSize={28}
+                  maxBarSize={22}
+                  radius={[4, 4, 0, 0]}
                 />
                 <Bar
                   dataKey="confirmed"
                   name="Confirmés"
-                  fill="#2a1f18"
-                  maxBarSize={28}
+                  fill="#3d2b1f"
+                  maxBarSize={22}
+                  radius={[4, 4, 0, 0]}
                 />
                 <Bar
                   dataKey="pending"
                   name="En attente"
                   fill="#d8bc7a"
-                  maxBarSize={28}
+                  maxBarSize={22}
+                  radius={[4, 4, 0, 0]}
                 />
               </BarChart>
             </ResponsiveContainer>

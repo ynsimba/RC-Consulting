@@ -8,103 +8,78 @@ import {
 } from "@/lib/admin";
 import { useAuth } from "@/hooks/useAuth";
 import { DashboardCharts } from "@/components/admin/DashboardCharts";
+import {
+  EmptyState,
+  Icon,
+  PageHeader,
+  SkeletonRows,
+  StatusBadge,
+  formatTime,
+  type IconName,
+} from "@/components/admin/ui";
 
 type Metric = {
   label: string;
   value: number;
   to: string;
   hint: string;
-  tone?: "default" | "alert" | "focus";
+  icon: IconName;
+  tone?: "default" | "alert";
 };
 
-function MetricWidget({ label, value, to, hint, tone = "default" }: Metric) {
+function MetricCard({ label, value, to, hint, icon, tone = "default" }: Metric) {
   const isAlert = tone === "alert" && value > 0;
-  const isFocus = tone === "focus";
 
   return (
     <Link
       to={to}
-      className={`group flex min-h-[6.5rem] flex-col justify-between border bg-white p-3.5 transition hover:border-gold sm:min-h-[7rem] sm:p-4 ${
-        isAlert
-          ? "border-gold shadow-[inset_3px_0_0_0_var(--color-gold)]"
-          : isFocus
-            ? "border-line shadow-[inset_3px_0_0_0_var(--color-gold)]"
-            : "border-line"
-      }`}
+      className="adm-card group relative flex flex-col gap-2.5 overflow-hidden p-4 transition sm:gap-4 sm:p-5 duration-200 hover:-translate-y-0.5 hover:border-gold/50"
     >
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-[10px] font-semibold tracking-[0.14em] text-muted uppercase">
-          {label}
-        </p>
+      {isAlert && (
+        <span className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-gold-light via-gold to-gold-dark" />
+      )}
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[14px] font-medium text-muted">{label}</p>
         <span
-          aria-hidden
-          className="text-xs text-muted transition group-hover:text-gold"
+          className={`grid h-9 w-9 place-items-center rounded-lg ring-1 ring-inset transition ${
+            isAlert
+              ? "bg-gold/12 text-gold-dark ring-gold/25"
+              : "bg-soft text-brown ring-line group-hover:text-gold-dark"
+          }`}
         >
-          →
+          <Icon name={icon} className="h-[18px] w-[18px]" />
         </span>
       </div>
-      <p
-        className={`mt-3 font-serif text-3xl leading-none tabular-nums sm:text-[2.15rem] ${
-          isAlert ? "text-gold" : "text-ink"
-        }`}
-      >
-        {value}
-      </p>
-      <p className="mt-2 text-[10px] leading-snug text-muted">{hint}</p>
-    </Link>
-  );
-}
-
-function CompactMetric({
-  label,
-  value,
-  to,
-}: {
-  label: string;
-  value: number;
-  to: string;
-}) {
-  return (
-    <Link
-      to={to}
-      className="group flex items-center justify-between gap-2 border border-line bg-white px-3 py-2.5 transition hover:border-gold sm:px-3.5 sm:py-3"
-    >
-      <div className="min-w-0">
-        <p className="truncate text-[10px] font-semibold tracking-[0.12em] text-muted uppercase">
-          {label}
-        </p>
-      </div>
-      <div className="flex shrink-0 items-baseline gap-1.5">
-        <p className="font-serif text-xl leading-none tabular-nums text-ink sm:text-2xl">
+      <div className="flex items-end justify-between gap-2">
+        <p className="font-serif text-3xl leading-none text-ink tabular-nums sm:text-4xl">
           {value}
         </p>
-        <span
-          aria-hidden
-          className="text-[10px] text-muted transition group-hover:text-gold"
-        >
-          →
-        </span>
+        {isAlert && (
+          <span className="rounded-full bg-gold/12 px-2 py-0.5 text-[12px] font-medium text-gold-dark">
+            Action requise
+          </span>
+        )}
       </div>
+      <p className="-mt-1 flex items-center gap-1 text-[13px] text-muted">
+        {hint}
+        <Icon
+          name="arrowRight"
+          className="h-3.5 w-3.5 -translate-x-1 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100"
+        />
+      </p>
     </Link>
   );
 }
 
-function SkeletonWidget({ compact = false }: { compact?: boolean }) {
-  if (compact) {
-    return (
-      <div className="animate-pulse border border-line bg-white px-3 py-2.5 sm:px-3.5 sm:py-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="h-2.5 w-16 bg-line/80" />
-          <div className="h-5 w-8 bg-line/60" />
-        </div>
-      </div>
-    );
-  }
+function MetricSkeleton() {
   return (
-    <div className="min-h-[6.5rem] animate-pulse border border-line bg-white p-3.5 sm:min-h-[7rem] sm:p-4">
-      <div className="h-2.5 w-20 bg-line/80" />
-      <div className="mt-5 h-8 w-14 bg-line/60" />
-      <div className="mt-3 h-2 w-28 bg-line/50" />
+    <div className="adm-card animate-pulse p-5">
+      <div className="flex items-center justify-between">
+        <div className="h-3 w-20 rounded bg-line/70" />
+        <div className="h-9 w-9 rounded-lg bg-line/50" />
+      </div>
+      <div className="mt-4 h-9 w-14 rounded bg-line/60" />
+      <div className="mt-3 h-2.5 w-28 rounded bg-line/50" />
     </div>
   );
 }
@@ -130,7 +105,13 @@ export default function DashboardPage() {
         weekday: "long",
         day: "numeric",
         month: "long",
+        year: "numeric",
       }),
+    [],
+  );
+
+  const greeting = useMemo(
+    () => (new Date().getHours() < 18 ? "Bonjour" : "Bonsoir"),
     [],
   );
 
@@ -145,113 +126,90 @@ export default function DashboardPage() {
 
   const primaryMetrics: Metric[] = [
     {
-      label: "À venir",
+      label: "Rendez-vous à venir",
       value: data?.upcoming ?? 0,
       to: "/admin/agenda",
-      tone: "focus",
-      hint: "Confirmés & en attente",
+      icon: "calendar",
+      hint: "Confirmés et en attente",
     },
     {
-      label: "En attente",
+      label: "En attente de réponse",
       value: data?.pending ?? 0,
       to: "/admin/rendez-vous",
+      icon: "clock",
       tone: "alert",
       hint: "À confirmer ou refuser",
     },
     {
-      label: "Messages",
+      label: "Messages non lus",
       value: data?.messagesUnread ?? 0,
       to: "/admin/messages",
+      icon: "mail",
       tone: "alert",
-      hint: "Non lus",
+      hint: "Formulaire de contact",
     },
   ];
 
   const secondaryMetrics = [
-    {
-      label: "Ce mois",
-      value: data?.appointmentsMonth ?? 0,
-      to: "/admin/rendez-vous",
-    },
-    {
-      label: "Clients",
-      value: data?.clientsTotal ?? 0,
-      to: "/admin/clients",
-    },
-    {
-      label: "Total RDV",
-      value: data?.appointmentsTotal ?? 0,
-      to: "/admin/rendez-vous",
-    },
+    { label: "Ce mois-ci", value: data?.appointmentsMonth ?? 0, to: "/admin/rendez-vous" },
+    { label: "Clients", value: data?.clientsTotal ?? 0, to: "/admin/clients" },
+    { label: "Total rendez-vous", value: data?.appointmentsTotal ?? 0, to: "/admin/rendez-vous" },
   ];
 
-  const quickActions = [
-    { to: "/admin/agenda", label: "Agenda" },
-    { to: "/admin/rendez-vous", label: "Rendez-vous" },
-    { to: "/admin/messages", label: "Messages" },
-    { to: "/admin/disponibilites", label: "Disponibilités" },
-    { to: "/admin/clients", label: "Clients" },
-  ] as const;
+  const quickActions: { to: string; label: string; hint: string; icon: IconName }[] = [
+    { to: "/admin/rendez-vous", label: "Gérer les rendez-vous", hint: "Confirmer, modifier, refuser", icon: "list" },
+    { to: "/admin/disponibilites", label: "Disponibilités", hint: "Horaires et créneaux bloqués", icon: "clock" },
+    { to: "/admin/messages", label: "Boîte de réception", hint: "Messages du site", icon: "mail" },
+    { to: "/admin/clients", label: "Fichier clients", hint: "Coordonnées et export Excel", icon: "users" },
+  ];
 
   const loading = statsQuery.isLoading;
+  const fetching =
+    statsQuery.isFetching || todayQuery.isFetching || appointmentsQuery.isFetching;
+  const refetchAll = () => {
+    void statsQuery.refetch();
+    void todayQuery.refetch();
+    void appointmentsQuery.refetch();
+  };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-4">
-      <header className="flex flex-col gap-3 border-b border-line pb-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-[10px] font-semibold tracking-[0.18em] text-gold uppercase">
-            Administration
-          </p>
-          <h1 className="mt-0.5 font-sans text-xl font-bold tracking-wide text-ink uppercase sm:text-2xl">
-            Bonjour, {firstName}
-          </h1>
-          <p className="mt-0.5 text-xs capitalize text-muted">{todayLabel}</p>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Link
-            to="/admin/agenda"
-            className="btn-gold !px-3.5 !py-2 text-[10px] tracking-[0.12em]"
-          >
-            Ouvrir l’agenda
-          </Link>
-          <button
-            type="button"
-            onClick={() => {
-              void statsQuery.refetch();
-              void todayQuery.refetch();
-              void appointmentsQuery.refetch();
-            }}
-            disabled={
-              statsQuery.isFetching ||
-              todayQuery.isFetching ||
-              appointmentsQuery.isFetching
-            }
-            className="border border-line bg-white px-3 py-2 text-[10px] font-semibold tracking-[0.12em] text-ink uppercase transition hover:border-gold disabled:opacity-50"
-          >
-            {statsQuery.isFetching ||
-            todayQuery.isFetching ||
-            appointmentsQuery.isFetching
-              ? "…"
-              : "Actualiser"}
-          </button>
-        </div>
-      </header>
+    <div className="mx-auto max-w-6xl space-y-6">
+      <PageHeader
+        eyebrow={todayLabel}
+        title={
+          <>
+            {greeting}, <span className="capitalize">{firstName}</span>
+          </>
+        }
+        description="Voici l’activité du cabinet en un coup d’œil."
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={refetchAll}
+              disabled={fetching}
+              className="adm-btn"
+            >
+              <Icon name="refresh" className={`h-4 w-4 ${fetching ? "animate-spin" : ""}`} />
+              Actualiser
+            </button>
+            <Link to="/admin/agenda" className="adm-btn-primary">
+              <Icon name="calendar" />
+              Ouvrir l’agenda
+            </Link>
+          </>
+        }
+      />
 
-      {(statsQuery.isError ||
-        todayQuery.isError ||
-        appointmentsQuery.isError) && (
+      {(statsQuery.isError || todayQuery.isError || appointmentsQuery.isError) && (
         <div
-          className="border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-800"
+          className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[15px] text-red-800"
           role="alert"
         >
-          Impossible de charger le tableau de bord.{" "}
+          <span>Impossible de charger le tableau de bord.</span>
           <button
             type="button"
-            onClick={() => {
-              void statsQuery.refetch();
-              void todayQuery.refetch();
-              void appointmentsQuery.refetch();
-            }}
+            onClick={refetchAll}
             className="font-semibold underline underline-offset-2"
           >
             Réessayer
@@ -259,113 +217,118 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <section aria-label="Indicateurs clés" className="space-y-2">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <section aria-label="Indicateurs clés" className="space-y-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
           {loading
-            ? Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonWidget key={`p-${i}`} />
-              ))
-            : primaryMetrics.map((m) => (
-                <MetricWidget key={m.label} {...m} />
-              ))}
+            ? Array.from({ length: 3 }).map((_, i) => <MetricSkeleton key={i} />)
+            : primaryMetrics.map((m) => <MetricCard key={m.label} {...m} />)}
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          {loading
-            ? Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonWidget key={`s-${i}`} compact />
-              ))
-            : secondaryMetrics.map((m) => (
-                <CompactMetric key={m.label} {...m} />
-              ))}
+
+        <div className="adm-card grid grid-cols-3 divide-x divide-line/70 overflow-hidden">
+          {secondaryMetrics.map((m) => (
+            <Link
+              key={m.label}
+              to={m.to}
+              className="flex flex-col gap-1.5 px-4 py-3.5 transition hover:bg-[#fcfaf6] sm:flex-row sm:items-center sm:justify-between sm:px-5"
+            >
+              <p className="truncate text-[13px] text-muted">{m.label}</p>
+              {loading ? (
+                <span className="inline-block h-6 w-8 animate-pulse rounded bg-line/60" />
+              ) : (
+                <p className="font-serif text-2xl leading-none text-ink tabular-nums">
+                  {m.value}
+                </p>
+              )}
+            </Link>
+          ))}
         </div>
       </section>
+
+      <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr] lg:gap-5">
+        <section className="adm-card overflow-hidden" aria-label="Agenda du jour">
+          <div className="adm-card-head">
+            <div>
+              <h2 className="adm-card-title">Aujourd’hui</h2>
+              <p className="mt-0.5 text-[13px] text-muted">
+                {todayQuery.isLoading
+                  ? "Chargement…"
+                  : `${todayList.length} rendez-vous prévu${todayList.length > 1 ? "s" : ""}`}
+              </p>
+            </div>
+            <Link
+              to="/admin/agenda"
+              className="inline-flex items-center gap-1 text-[13px] font-medium text-gold-dark hover:text-gold"
+            >
+              Agenda complet
+              <Icon name="arrowRight" className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          {todayQuery.isLoading ? (
+            <SkeletonRows rows={3} />
+          ) : todayList.length === 0 ? (
+            <EmptyState
+              icon="calendar"
+              title="Journée libre"
+              hint="Aucun rendez-vous n’est prévu aujourd’hui."
+            />
+          ) : (
+            <ul className="divide-y divide-line/50">
+              {todayList.slice(0, 6).map((a) => (
+                <li key={a.id} className="flex items-center gap-4 px-4 py-3.5 sm:px-5">
+                  <div className="w-14 shrink-0 text-center">
+                    <p className="text-[15px] font-semibold text-ink tabular-nums">
+                      {formatTime(a.starts_at)}
+                    </p>
+                    <p className="text-[12px] text-muted">{a.duration} min</p>
+                  </div>
+                  <span className="h-10 w-px shrink-0 bg-gradient-to-b from-gold/0 via-gold/60 to-gold/0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[15px] font-medium text-ink">{a.subject}</p>
+                    <p className="truncate text-[13px] text-muted">
+                      {a.client?.first_name} {a.client?.last_name}
+                    </p>
+                  </div>
+                  <StatusBadge status={a.status} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="adm-card overflow-hidden" aria-label="Accès rapide">
+          <div className="adm-card-head">
+            <h2 className="adm-card-title">Accès rapide</h2>
+          </div>
+          <ul className="divide-y divide-line/50">
+            {quickActions.map((action) => (
+              <li key={action.to}>
+                <Link
+                  to={action.to}
+                  className="group flex items-center gap-3.5 px-4 py-3 transition hover:bg-[#fcfaf6] sm:px-5"
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-soft text-brown ring-1 ring-line transition group-hover:bg-gold/12 group-hover:text-gold-dark group-hover:ring-gold/25">
+                    <Icon name={action.icon} className="h-[18px] w-[18px]" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[15px] font-medium text-ink">{action.label}</p>
+                    <p className="truncate text-[13px] text-muted">{action.hint}</p>
+                  </div>
+                  <Icon
+                    name="chevronRight"
+                    className="h-4 w-4 text-line transition group-hover:translate-x-0.5 group-hover:text-gold"
+                  />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
 
       <DashboardCharts
         appointments={appointmentsQuery.data ?? []}
         isLoading={appointmentsQuery.isLoading}
       />
-
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <section
-          className="border border-line bg-white"
-          aria-label="Agenda du jour"
-        >
-          <div className="flex items-center justify-between gap-2 border-b border-line px-3 py-2.5 sm:px-4">
-            <p className="text-[10px] font-semibold tracking-[0.16em] text-muted uppercase">
-              Aujourd’hui
-            </p>
-            <Link
-              to="/admin/agenda"
-              className="text-[10px] font-semibold tracking-wide text-gold uppercase hover:underline"
-            >
-              Voir tout →
-            </Link>
-          </div>
-          <ul className="divide-y divide-line">
-            {todayQuery.isLoading && (
-              <li className="px-3 py-5 text-sm text-muted sm:px-4">
-                Chargement…
-              </li>
-            )}
-            {!todayQuery.isLoading && todayList.length === 0 && (
-              <li className="px-3 py-5 text-sm text-muted sm:px-4">
-                Aucun rendez-vous prévu aujourd’hui.
-              </li>
-            )}
-            {todayList.slice(0, 5).map((a) => (
-              <li
-                key={a.id}
-                className="flex items-start justify-between gap-3 px-3 py-3 sm:px-4"
-              >
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold tracking-wide text-gold uppercase">
-                    {new Date(a.starts_at).toLocaleTimeString("fr-FR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}{" "}
-                    · {a.duration} min
-                  </p>
-                  <p className="mt-0.5 truncate text-sm font-semibold">
-                    {a.subject}
-                  </p>
-                  <p className="truncate text-xs text-muted">
-                    {a.client?.first_name} {a.client?.last_name}
-                  </p>
-                </div>
-                <span className="shrink-0 text-[10px] tracking-wide text-muted uppercase">
-                  {a.status === "pending"
-                    ? "Attente"
-                    : a.status === "confirmed"
-                      ? "Confirmé"
-                      : a.status}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section
-          className="border border-line bg-white"
-          aria-label="Actions rapides"
-        >
-          <div className="border-b border-line px-3 py-2.5 sm:px-4">
-            <p className="text-[10px] font-semibold tracking-[0.16em] text-muted uppercase">
-              Accès rapide
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-px bg-line">
-            {quickActions.map((action) => (
-              <Link
-                key={action.to}
-                to={action.to}
-                className="bg-white px-3 py-3.5 text-[11px] font-semibold tracking-[0.12em] text-ink uppercase transition hover:bg-soft hover:text-gold"
-              >
-                {action.label}
-              </Link>
-            ))}
-          </div>
-        </section>
-      </div>
     </div>
   );
 }
