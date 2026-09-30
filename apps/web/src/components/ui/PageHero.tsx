@@ -20,7 +20,7 @@ export function PageHero({
       className={`relative flex items-center justify-center overflow-hidden ${
         compact
           ? "min-h-[12vh] sm:min-h-[14vh] md:min-h-[16vh]"
-          : "min-h-[42vh] md:min-h-[48vh]"
+          : "min-h-[18vh] md:min-h-[22vh]"
       }`}
     >
       <motion.img
@@ -42,7 +42,7 @@ export function PageHero({
       />
       <div
         className={`container-rc relative z-10 text-center ${
-          compact ? "py-5 md:py-6" : "py-20"
+          compact ? "py-5 md:py-6" : "py-6 md:py-8"
         }`}
       >
         <motion.h1
