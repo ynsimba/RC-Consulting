@@ -22,9 +22,16 @@ php artisan serve
 - Admin : http://localhost:5173/admin
 - Base : phpMyAdmin, base `rc-consulting` (MAMP, port 8889)
 
-## Build Hostinger
+## Déploiement Hostinger (hébergement mutualisé)
+
+Domaine : `rc-consulting-legal.com`. L’API est sur `api.rc-consulting-legal.com`.
 
 ```bash
-VITE_SITE_URL="https://www.votredomaine.com" npm run build:hostinger
-# Sortie : hostinger-dist/ (+ zip optionnel)
+HOSTINGER_DB_PASSWORD='…' npm run build:hostinger
 ```
+
+Sortie dans `hostinger-dist/` :
+
+- `public_html/` → contenu du domaine principal
+- `laravel/` → application, hors du web ; la racine du sous-domaine `api` doit pointer vers `laravel/public`
+- `LISEZMOI.txt` → étapes hPanel (PHP 8.3 ou 8.4, SSL, base déjà créée)
