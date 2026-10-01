@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { sanitizeArticleHtml } from "@/lib/sanitizeHtml";
 import { Seo } from "@/lib/seo";
 import { PageHero } from "@/components/ui/PageHero";
 import { Button } from "@/components/ui/Button";
@@ -77,7 +78,7 @@ export default function BlogArticlePage() {
           )}
           <div
             className="space-y-4 text-lg leading-relaxed text-muted [&_p]:mb-4"
-            dangerouslySetInnerHTML={{ __html: data.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeArticleHtml(data.content) }}
           />
           <div className="mt-12 flex flex-wrap gap-4">
             <Button to="/rendez-vous">Prendre rendez-vous</Button>

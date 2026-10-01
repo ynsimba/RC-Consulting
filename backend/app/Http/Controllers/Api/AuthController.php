@@ -18,7 +18,7 @@ class AuthController extends Controller
         ]);
 
         $user = User::query()->where('email', $data['email'])->first();
-        if (! $user || ! Hash::check($data['password'], $user->password) || $user->role !== 'admin') {
+        if (! $user || ! Hash::check($data['password'], $user->password) || ! in_array($user->role, ['admin', 'super_admin'], true)) {
             throw ValidationException::withMessages([
                 'email' => 'Identifiants invalides',
             ]);

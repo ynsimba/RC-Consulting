@@ -140,3 +140,121 @@ export async function updateAllowedDurations(durations: number[]) {
     body: JSON.stringify({ allowed_durations: durations }),
   });
 }
+
+export type StaffUser = {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "super_admin";
+  phone: string | null;
+  created_at: string;
+};
+
+export type FaqItem = {
+  id: string;
+  question: string;
+  answer: string;
+  question_en: string | null;
+  answer_en: string | null;
+  sort_order: number;
+  published: boolean;
+};
+
+export type ArticleItem = {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  published: boolean;
+  category_id: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  category?: { id: string; name: string; slug: string } | null;
+};
+
+export type CategoryItem = { id: string; name: string; slug: string };
+
+export function fetchStaffUsers() {
+  return api<StaffUser[]>("/api/admin/users");
+}
+
+export function saveStaffUser(
+  input: {
+    name: string;
+    email: string;
+    role: "admin" | "super_admin";
+    phone?: string | null;
+    password?: string;
+  },
+  id?: number,
+) {
+  return api<StaffUser>(id ? `/api/admin/users/${id}` : "/api/admin/users", {
+    method: id ? "PATCH" : "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteStaffUser(id: number) {
+  return api(`/api/admin/users/${id}`, { method: "DELETE" });
+}
+
+export function fetchAdminFaqs() {
+  return api<FaqItem[]>("/api/admin/faqs");
+}
+
+export function saveFaq(input: Omit<FaqItem, "id">, id?: string) {
+  return api<FaqItem>(id ? `/api/admin/faqs/${id}` : "/api/admin/faqs", {
+    method: id ? "PATCH" : "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteFaq(id: string) {
+  return api(`/api/admin/faqs/${id}`, { method: "DELETE" });
+}
+
+export function fetchAdminArticles() {
+  return api<ArticleItem[]>("/api/admin/articles");
+}
+
+export function saveArticle(
+  input: {
+    title: string;
+    excerpt: string;
+    content: string;
+    published: boolean;
+    category_id?: string | null;
+    seo_title?: string | null;
+    seo_description?: string | null;
+    slug?: string;
+  },
+  id?: string,
+) {
+  return api<ArticleItem>(
+    id ? `/api/admin/articles/${id}` : "/api/admin/articles",
+    {
+      method: id ? "PATCH" : "POST",
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+export function deleteArticle(id: string) {
+  return api(`/api/admin/articles/${id}`, { method: "DELETE" });
+}
+
+export function fetchAdminCategories() {
+  return api<CategoryItem[]>("/api/admin/categories");
+}
+
+export function createCategory(name: string) {
+  return api<CategoryItem>("/api/admin/categories", {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  });
+}
+
+export function deleteCategory(id: string) {
+  return api(`/api/admin/categories/${id}`, { method: "DELETE" });
+}

@@ -22,43 +22,18 @@ const CONTACT_EMAIL = "contact@rc-consulting-legal.com";
 const WHATSAPP_URL = "https://wa.me/32476950655";
 
 async function sendContactMessage(data: ContactMessageInput) {
-  try {
-    await api("/api/messages", {
-      method: "POST",
-      body: JSON.stringify({
-        first_name: data.firstName,
-        last_name: data.lastName,
-        email: data.email,
-        phone: data.phone ?? null,
-        subject: data.subject,
-        message: data.message,
-      }),
-    });
-    return { ok: true };
-  } catch {
-    // Secours si l'API Laravel est injoignable
-    const res = await fetch(
-      `https://formsubmit.co/ajax/${CONTACT_EMAIL}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          name: `${data.firstName} ${data.lastName}`,
-          email: data.email,
-          phone: data.phone ?? "",
-          subject: data.subject,
-          message: data.message,
-          _subject: `Contact RC Consulting — ${data.subject}`,
-          _template: "table",
-        }),
-      },
-    );
-    if (!res.ok) throw new Error("send failed");
-    return res.json();
-  }
+  await api("/api/messages", {
+    method: "POST",
+    body: JSON.stringify({
+      first_name: data.firstName,
+      last_name: data.lastName,
+      email: data.email,
+      phone: data.phone ?? null,
+      subject: data.subject,
+      message: data.message,
+    }),
+  });
+  return { ok: true };
 }
 
 export default function ContactPage() {

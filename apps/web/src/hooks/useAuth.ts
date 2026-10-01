@@ -4,7 +4,7 @@ import { api, getAdminToken, setAdminToken } from "@/lib/api";
 export type AuthUser = {
   id: string;
   email: string;
-  role: "ADMIN" | "CLIENT";
+  role: "SUPER_ADMIN" | "ADMIN" | "CLIENT";
   name?: string | null;
 };
 
@@ -42,7 +42,12 @@ export function useAuth() {
     ? {
         id: profile.id,
         email: profile.email,
-        role: profile.role === "admin" ? "ADMIN" : "CLIENT",
+        role:
+          profile.role === "super_admin"
+            ? "SUPER_ADMIN"
+            : profile.role === "admin"
+              ? "ADMIN"
+              : "CLIENT",
         name:
           [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
           null,
@@ -71,7 +76,9 @@ export function useAuth() {
   return {
     user,
     isLoading: profileQuery.isLoading,
-    isAdmin: profile?.role === "admin",
+    isAdmin:
+      profile?.role === "admin" || profile?.role === "super_admin",
+    isSuperAdmin: profile?.role === "super_admin",
     login,
     logout,
   };

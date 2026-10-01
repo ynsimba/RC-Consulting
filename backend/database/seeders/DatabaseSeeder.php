@@ -12,14 +12,18 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        User::query()->updateOrCreate(
-            ['email' => 'admin@rc-consulting-legal.com'],
-            [
-                'name' => 'RC Consulting',
-                'password' => 'RcAdmin2026!',
-                'role' => 'admin',
-            ],
-        );
+        $email = env('ADMIN_EMAIL');
+        $password = env('ADMIN_PASSWORD');
+        if (is_string($email) && $email !== '' && is_string($password) && $password !== '') {
+            User::query()->firstOrCreate(
+                ['email' => $email],
+                [
+                    'name' => 'RC Consulting',
+                    'password' => $password,
+                    'role' => 'super_admin',
+                ],
+            );
+        }
 
         Setting::query()->updateOrCreate(
             ['id' => 1],

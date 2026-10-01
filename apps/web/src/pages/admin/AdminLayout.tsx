@@ -12,7 +12,7 @@ type NavItem = {
   badge?: "pending" | "messages";
 };
 
-const sections: { title: string; items: NavItem[] }[] = [
+const baseSections: { title: string; items: NavItem[] }[] = [
   {
     title: "Pilotage",
     items: [
@@ -56,15 +56,29 @@ function SidebarContent({
   email,
   name,
   counts,
+  isSuperAdmin,
   onNavigate,
   onLogout,
 }: {
   email?: string;
   name?: string | null;
   counts: { pending: number; messages: number };
+  isSuperAdmin: boolean;
   onNavigate?: () => void;
   onLogout: () => void;
 }) {
+  const sections = isSuperAdmin
+    ? [
+        ...baseSections,
+        {
+          title: "Super admin",
+          items: [
+            { to: "utilisateurs", label: "Utilisateurs", icon: "users" as const },
+            { to: "contenus", label: "Contenus", icon: "edit" as const },
+          ],
+        },
+      ]
+    : baseSections;
   const display = name?.trim() || email?.split("@")[0] || "Admin";
   return (
     <>
@@ -159,7 +173,7 @@ function SidebarContent({
 }
 
 export default function AdminLayout() {
-  const { user, isLoading, isAdmin, logout } = useAuth();
+  const { user, isLoading, isAdmin, isSuperAdmin, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -208,6 +222,7 @@ export default function AdminLayout() {
     email: user.email,
     name: user.name,
     counts,
+    isSuperAdmin,
     onLogout: () => logout(),
   };
 

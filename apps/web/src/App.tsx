@@ -40,6 +40,8 @@ const AppointmentsAdminPage = lazy(
 );
 const MessagesPage = lazy(() => import("@/pages/admin/MessagesPage"));
 const AvailabilityPage = lazy(() => import("@/pages/admin/AvailabilityPage"));
+const UsersPage = lazy(() => import("@/pages/admin/UsersPage"));
+const ContentPage = lazy(() => import("@/pages/admin/ContentPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -106,6 +108,8 @@ export default function App() {
                 <Route path="rendez-vous" element={<AppointmentsAdminPage />} />
                 <Route path="messages" element={<MessagesPage />} />
                 <Route path="disponibilites" element={<AvailabilityPage />} />
+                <Route path="utilisateurs" element={<UsersPage />} />
+                <Route path="contenus" element={<ContentPage />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />

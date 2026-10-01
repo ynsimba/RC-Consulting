@@ -8,6 +8,9 @@ use App\Models\BlockedSlot;
 use App\Models\Client;
 use App\Models\Setting;
 use Carbon\Carbon;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -15,7 +18,7 @@ class BookingService
 {
     private const TZ = 'Europe/Brussels';
 
-    public function slots(string $date, int $duration): array
+    public function slots(string $date, int $duration, ?string $ignoreId = null): array
     {
         $allowed = Setting::query()->find(1)?->allowed_durations ?? [30, 60];
         if (! in_array($duration, $allowed, true)) {
@@ -29,6 +32,7 @@ class BookingService
         }
 
         $appointments = Appointment::query()
+            ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
             ->whereIn('status', ['pending', 'confirmed'])
             ->where('starts_at', '<', $day->copy()->endOfDay()->utc())
             ->where('ends_at', '>', $day->copy()->utc())
@@ -70,24 +74,28 @@ class BookingService
     {
         $starts = Carbon::parse($input['starts_at'])->timezone(self::TZ);
         $duration = (int) $input['duration'];
-        $time = $starts->format('H:i');
 
-        if (! in_array($time, $this->slots($starts->toDateString(), $duration), true)) {
+        try {
+            return Cache::lock('booking:'.$starts->toDateString(), 10)->block(5, function () use ($input, $starts, $duration) {
+                return DB::transaction(function () use ($input, $starts, $duration) {
+                    $this->assertSlotOpen($starts, $duration);
+
+                    return $this->store($input, $starts, $duration);
+                });
+            });
+        } catch (LockTimeoutException) {
             throw ValidationException::withMessages([
-                'starts_at' => 'Créneau indisponible',
+                'starts_at' => 'Créneau en cours de réservation, réessayez.',
             ]);
         }
+    }
 
+    private function store(array $input, Carbon $starts, int $duration): Appointment
+    {
         $email = strtolower(trim($input['email']));
         $client = Client::query()->whereRaw('lower(email) = ?', [$email])->first();
 
-        if ($client) {
-            $client->update([
-                'first_name' => trim($input['first_name']),
-                'last_name' => trim($input['last_name']),
-                'phone' => trim((string) ($input['phone'] ?? '')) ?: $client->phone,
-            ]);
-        } else {
+        if (! $client) {
             $client = Client::query()->create([
                 'first_name' => trim($input['first_name']),
                 'last_name' => trim($input['last_name']),
@@ -121,6 +129,12 @@ class BookingService
             throw ValidationException::withMessages(['token' => 'Rendez-vous introuvable']);
         }
 
+        if (! in_array($appointment->status, ['pending', 'confirmed'], true) || $appointment->starts_at->lte(now())) {
+            throw ValidationException::withMessages([
+                'token' => 'Ce rendez-vous ne peut plus être modifié',
+            ]);
+        }
+
         if ($action === 'cancel') {
             $appointment->update(['status' => 'cancelled']);
 
@@ -133,17 +147,34 @@ class BookingService
 
         $starts = Carbon::parse($startsAt)->timezone(self::TZ);
         $duration = $duration ?: $appointment->duration;
-        if (! in_array($starts->format('H:i'), $this->slots($starts->toDateString(), $duration), true)) {
-            throw ValidationException::withMessages(['starts_at' => 'Créneau indisponible']);
+
+        try {
+            return Cache::lock('booking:'.$starts->toDateString(), 10)->block(5, function () use ($appointment, $starts, $duration) {
+                return DB::transaction(function () use ($appointment, $starts, $duration) {
+                    $this->assertSlotOpen($starts, $duration, $appointment->id);
+                    $appointment->update([
+                        'duration' => $duration,
+                        'starts_at' => $starts->copy()->utc(),
+                        'ends_at' => $starts->copy()->addMinutes($duration)->utc(),
+                    ]);
+
+                    return $appointment->fresh('client');
+                });
+            });
+        } catch (LockTimeoutException) {
+            throw ValidationException::withMessages([
+                'starts_at' => 'Créneau en cours de réservation, réessayez.',
+            ]);
         }
+    }
 
-        $appointment->update([
-            'duration' => $duration,
-            'starts_at' => $starts->copy()->utc(),
-            'ends_at' => $starts->copy()->addMinutes($duration)->utc(),
-        ]);
-
-        return $appointment->fresh('client');
+    private function assertSlotOpen(Carbon $starts, int $duration, ?string $ignoreId = null): void
+    {
+        if (! in_array($starts->format('H:i'), $this->slots($starts->toDateString(), $duration, $ignoreId), true)) {
+            throw ValidationException::withMessages([
+                'starts_at' => 'Créneau indisponible',
+            ]);
+        }
     }
 
     private function minutes(string $time): int
